@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load jalali_tags %}
+{% block title %}داشبورد | باشگاه مشتریان داروخانه{% endblock %}
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="welcome-text">
+            <h2>سلام، {{ user.full_name|default:user.phone_number }} 👋</h2>
+            <p>به باشگاه مشتریان داروخانه خوش آمدید</p>
+        </div>
+        <div class="welcome-icon">
+            <i class="fas fa-clinic-medical"></i>
+        </div>
+    </div>
+
+    <!-- Active Discount Banner -->
+    {% if active_discount %}
+    <div class="discount-banner">
+        <div class="discount-content">
+            <i class="fas fa-gift"></i>
+            <div>
+                <strong>تخفیف ویژه {{ active_discount.percentage }}٪ فعال است!</strong>
+                <p>برای اقلام آرایشی-بهداشتی تا {{ active_discount.expires_at|jalali:"%Y/%m/%d" }} معتبر است</p>
+            </div>
+        </div>
+        <div class="discount-badge">{{ active_discount.percentage }}%</div>
+    </div>
+    {% endif %}
+
+    <!-- Monthly Progress -->
+    <div class="progress-card">
+        <div class="progress-header">
+            <span><i class="fas fa-chart-line"></i> خرید ماهانه شما</span>
+            <span class="progress-amount">{{ monthly_total|floatformat:0 }} تومان</span>
+        </div>
+        {% with percent=monthly_total|floatformat:0 %}
+        <div class="progress-bar-wrap">
+            <div class="progress-bar" style="width: {% if monthly_total >= threshold %}100{% else %}{{ monthly_total|floatformat:0|add:'0' }}{% endif %}%">
+            </div>
+        </div>
+        {% endwith %}
+        <div class="progress-footer">
+            <span>هدف: ۱,۰۰۰,۰۰۰ تومان برای دریافت تخفیف ۱۰٪</span>
+            {% if monthly_total >= threshold %}
+            <span class="badge-success">هدف حاصل شد! ✅</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Action Buttons -->
+    <div class="action-grid">
+        <!-- Prescription -->
+        <div class="action-card" onclick="openPrescriptionModal()">
+            <div class="action-icon" style="background: linear-gradient(135deg, #1a7a4a, #2dbe78)">
+                <i class="fas fa-file-prescription"></i>
+            </div>
+            <h3>ثبت نسخه</h3>
+            <p>کد رهگیری نسخه خود را ثبت کنید</p>
+            <span class="action-arrow"><i class="fas fa-arrow-left"></i></span>
+        </div>
+
+        <!-- Consultation -->
+        <a href="{% url 'user_chat' %}" class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, #0d6ea8, #1a9be8)">
+                <i class="fas fa-comments-medical"></i>
+            </div>
+            <h3>مشاوره با داروساز</h3>
+            <p>سوالات دارویی خود را بپرسید</p>
+            <span class="action-arrow"><i class="fas fa-arrow-left"></i></span>
+        </a>
+
+        <!-- Blog -->
+        <a href="{% url 'blog' %}" class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, #7c4dce, #b47fde)">
+                <i class="fas fa-book-medical"></i>
+            </div>
+            <h3>بلاگ و آموزش</h3>
+            <p>مقالات آموزشی پزشکی</p>
+            <span class="action-arrow coming-soon-tag">به زودی</span>
+        </a>
+
+        <!-- My Prescriptions -->
+        <a href="{% url 'my_prescriptions' %}" class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, #c0552a, #e8824a)">
+                <i class="fas fa-list-alt"></i>
+            </div>
+            <h3>نسخه‌های من</h3>
+            <p>تاریخچه و وضعیت نسخه‌ها</p>
+            <span class="action-arrow"><i class="fas fa-arrow-left"></i></span>
+        </a>
+    </div>
+
+    <!-- Recent Notifications -->
+    {% if notifications %}
+    <div class="recent-notifs">
+        <h3><i class="fas fa-bell"></i> اعلان‌های اخیر</h3>
+        {% for notif in notifications %}
+        <div class="notif-row {% if not notif.is_read %}unread{% endif %}">
+            <div class="notif-icon-wrap">
+                {% if notif.notification_type == 'prescription' %}
+                <i class="fas fa-file-medical" style="color: #1a7a4a"></i>
+                {% elif notif.notification_type == 'discount' %}
+                <i class="fas fa-tag" style="color: #e8a000"></i>
+                {% else %}
+                <i class="fas fa-bell" style="color: #0d6ea8"></i>
+                {% endif %}
+            </div>
+            <div class="notif-body">
+                <strong>{{ notif.title }}</strong>
+                <p>{{ notif.message }}</p>
+                <small>{{ notif.created_at|jalali:"%Y/%m/%d %H:%M" }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Prescription Modal -->
+<div class="modal-overlay" id="prescriptionModal" style="display:none">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-file-prescription"></i> ثبت نسخه</h3>
+            <button onclick="closePrescriptionModal()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="modal-hint">لطفاً اطلاعات نسخه پزشکی خود را وارد کنید</p>
+            <div class="form-group">
+                <label><i class="fas fa-barcode"></i> کد رهگیری نسخه</label>
+                <input type="text" id="trackingCode" class="form-input" placeholder="مثال: 1234567890" dir="ltr">
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-id-card"></i> کد ملی</label>
+                <input type="text" id="nationalId" class="form-input" placeholder="۱۰ رقم" maxlength="10" dir="ltr" inputmode="numeric">
+            </div>
+            <div id="prescriptionMsg"></div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="submitPrescription()" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> ثبت نسخه
+            </button>
+            <button onclick="closePrescriptionModal()" class="btn btn-secondary">انصراف</button>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function openPrescriptionModal() {
+    document.getElementById('prescriptionModal').style.display = 'flex';
+    document.getElementById('trackingCode').focus();
+}
+function closePrescriptionModal() {
+    document.getElementById('prescriptionModal').style.display = 'none';
+    document.getElementById('trackingCode').value = '';
+    document.getElementById('nationalId').value = '';
+    document.getElementById('prescriptionMsg').innerHTML = '';
+}
+function submitPrescription() {
+    const tracking = document.getElementById('trackingCode').value.trim();
+    const national = document.getElementById('nationalId').value.trim();
+    const msgDiv = document.getElementById('prescriptionMsg');
+    if (!tracking || !national) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">لطفاً تمام فیلدها را پر کنید.</div>';
+        return;
+    }
+    const formData = new FormData();
+    formData.append('tracking_code', tracking);
+    formData.append('national_id', national);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+    fetch('{% url "submit_prescription" %}', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            msgDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ${data.message}</div>`;
+            setTimeout(() => { closePrescriptionModal(); loadNotifications(); }, 2000);
+        } else {
+            msgDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${data.error}</div>`;
+        }
+    });
+}
+
+// Progress bar calculation
+document.addEventListener('DOMContentLoaded', () => {
+    const bar = document.querySelector('.progress-bar');
+    if (bar) {
+        const monthly = {{ monthly_total }};
+        const threshold = {{ threshold }};
+        const pct = Math.min((monthly / threshold) * 100, 100);
+        bar.style.width = pct + '%';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

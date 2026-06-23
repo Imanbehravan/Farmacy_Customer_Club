@@ -1,0 +1,90 @@
+{% extends 'admin_panel/base.html' %}
+{% load jalali_tags %}
+{% block title %}مدیریت نسخه‌ها{% endblock %}
+{% block page_title %}<i class="fas fa-file-prescription"></i> مدیریت نسخه‌ها{% endblock %}
+
+{% block content %}
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <form method="get" class="filter-form">
+    <label>فیلتر وضعیت:</label>
+    <select name="status" onchange="this.form.submit()" class="form-select">
+      <option value="">همه نسخه‌ها</option>
+      {% for val, label in STATUS_CHOICES %}
+      <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </form>
+  <span class="total-count">مجموع: <strong>{{ prescriptions|length }}</strong> نسخه</span>
+</div>
+
+<!-- Table -->
+<div class="admin-card">
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>کد رهگیری</th>
+          <th>شماره موبایل</th>
+          <th>کد ملی</th>
+          <th>تعداد اقلام</th>
+          <th>وضعیت</th>
+          <th>تاریخ ثبت</th>
+          <th>عملیات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rx in prescriptions %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><code dir="ltr">{{ rx.tracking_code }}</code></td>
+          <td dir="ltr">{{ rx.user.phone_number }}</td>
+          <td dir="ltr">{{ rx.national_id }}</td>
+          <td>
+            {% with cnt=rx.items.count %}
+            {% if cnt > 0 %}
+              <span class="status-badge badge-info">{{ cnt }} قلم</span>
+            {% else %}
+              <span style="color:#94a3b8;font-size:.78rem">وارد نشده</span>
+            {% endif %}
+            {% endwith %}
+          </td>
+          <td>
+            <span class="status-badge badge-{{ rx.get_status_display_class }}">
+              {{ rx.get_status_display }}
+            </span>
+          </td>
+          <td style="white-space:nowrap">{{ rx.created_at|jalali:"%Y/%m/%d" }}<br>
+            <small style="color:#94a3b8">{{ rx.created_at|time:"H:i" }}</small>
+          </td>
+          <td>
+            <a href="{% url 'admin_prescription_detail' rx.pk %}"
+               class="btn btn-sm btn-primary">
+              <i class="fas fa-eye"></i> بررسی
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="empty-row">
+            <i class="fas fa-inbox" style="display:block;font-size:2rem;margin-bottom:.5rem;color:#cbd5e1"></i>
+            نسخه‌ای یافت نشد
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Legend -->
+<div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem;font-size:.75rem;color:#64748b">
+  <span><span class="status-badge badge-warning">در حال بررسی</span> کد رهگیری ثبت شده، اقلام وارد نشده</span>
+  <span><span class="status-badge badge-info">اقلام وارد شده</span> آماده تعیین وضعیت نهایی</span>
+  <span><span class="status-badge badge-success">آماده تحویل</span> بیمار مطلع شده</span>
+  <span><span class="status-badge badge-danger">موجودی ناقص</span> بیمار مطلع شده</span>
+</div>
+
+{% endblock %}

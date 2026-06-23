@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}پنل مدیریت{% endblock %} | داروخانه</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="admin-body">
+
+<div class="admin-layout">
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <i class="fas fa-clinic-medical"></i>
+      <span>پنل مدیریت</span>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <div class="nav-section-label">مدیریت</div>
+
+      <a href="{% url 'admin_dashboard' %}"
+         class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>داشبورد</span>
+      </a>
+
+      <a href="{% url 'admin_prescriptions' %}"
+         class="nav-item {% if 'prescription' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-file-prescription"></i>
+        <span>نسخه‌ها</span>
+      </a>
+
+      <a href="{% url 'admin_chat_list' %}"
+         class="nav-item {% if 'chat' in request.resolver_match.url_name %}active{% endif %}">
+        <i class="fas fa-comments"></i>
+        <span>چت مشاوره</span>
+      </a>
+
+      <div class="nav-section-label">باشگاه مشتریان</div>
+
+      <a href="{% url 'admin_purchases' %}"
+         class="nav-item {% if request.resolver_match.url_name == 'admin_purchases' %}active{% endif %}">
+        <i class="fas fa-shopping-cart"></i>
+        <span>ثبت خرید</span>
+      </a>
+
+      <a href="{% url 'admin_campaigns' %}"
+         class="nav-item {% if request.resolver_match.url_name == 'admin_campaigns' %}active{% endif %}">
+        <i class="fas fa-percent"></i>
+        <span>کمپین‌های تخفیف</span>
+      </a>
+
+      <a href="{% url 'admin_broadcast' %}"
+         class="nav-item {% if request.resolver_match.url_name == 'admin_broadcast' %}active{% endif %}">
+        <i class="fas fa-bullhorn"></i>
+        <span>پیام همگانی</span>
+      </a>
+
+      <div class="nav-divider"></div>
+
+      <a href="{% url 'dashboard' %}" class="nav-item">
+        <i class="fas fa-user"></i>
+        <span>پنل کاربری</span>
+      </a>
+
+      <a href="{% url 'logout' %}" class="nav-item nav-logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>خروج</span>
+      </a>
+
+    </nav>
+  </aside>
+
+  <!-- ══════ MAIN ══════ -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <h1>{% block page_title %}{% endblock %}</h1>
+      <div class="admin-user">
+        <i class="fas fa-user-shield"></i>
+        <span>{{ request.user.phone_number }}</span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible">
+          {{ message }}
+          <button onclick="this.parentElement.remove()" class="close-btn">&times;</button>
+        </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+</div>
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

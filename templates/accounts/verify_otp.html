@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}تأیید کد | باشگاه مشتریان داروخانه{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <div class="logo-circle">
+                <i class="fas fa-sms"></i>
+            </div>
+            <h1>تأیید شماره موبایل</h1>
+            <p>کد ۶ رقمی ارسال شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید</p>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'verify_otp' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="code">
+                    <i class="fas fa-key"></i>
+                    کد تأیید
+                </label>
+                <input
+                    type="text"
+                    id="code"
+                    name="code"
+                    placeholder="------"
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    required
+                    autofocus
+                    class="form-input otp-input"
+                    dir="ltr"
+                    inputmode="numeric"
+                >
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">
+                <i class="fas fa-check-circle"></i>
+                تأیید و ورود
+            </button>
+        </form>
+
+        <div class="resend-section">
+            <span id="timerText">ارسال مجدد کد پس از: <strong id="timer">02:00</strong></span>
+            <a href="{% url 'login' %}" class="resend-link" id="resendLink" style="display:none">
+                <i class="fas fa-redo"></i> ارسال مجدد
+            </a>
+        </div>
+
+        <div class="auth-footer">
+            <i class="fas fa-info-circle"></i>
+            کد تأیید در کنسول سرور قابل مشاهده است (حالت آزمایشی)
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    let seconds = 120;
+    const timer = document.getElementById('timer');
+    const timerText = document.getElementById('timerText');
+    const resendLink = document.getElementById('resendLink');
+
+    const interval = setInterval(() => {
+        seconds--;
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        timer.textContent = `${m}:${s}`;
+        if (seconds <= 0) {
+            clearInterval(interval);
+            timerText.style.display = 'none';
+            resendLink.style.display = 'inline-flex';
+        }
+    }, 1000);
+</script>
+{% endblock %}
+{% endblock %}
