@@ -1,0 +1,148 @@
+{% extends 'admin_panel/base.html' %}
+{% load jalali_tags %}
+{% block title %}کمپین‌های تخفیف{% endblock %}
+{% block page_title %}<i class="fas fa-percent"></i> کمپین‌های تخفیف همگانی{% endblock %}
+
+{% block content %}
+
+<!-- Create campaign -->
+<div class="admin-card" style="margin-bottom:1.5rem">
+  <div class="admin-card-header">
+    <h3><i class="fas fa-plus-circle"></i> ایجاد کمپین تخفیف جدید</h3>
+    <span style="font-size:.75rem;color:#64748b">
+      <i class="fas fa-info-circle"></i>
+      کمپین‌های فعال هنگام ثبت خرید توسط ادمین قابل اعمال هستند
+    </span>
+  </div>
+  <form method="post" style="padding:1.2rem">
+    {% csrf_token %}
+    <div class="campaign-form-grid">
+      <div class="form-group">
+        <label>نام کمپین <span style="color:#ef4444">*</span></label>
+        <input type="text" name="name" class="form-input"
+          placeholder="مثال: تخفیف نوروز ۱۴۰۴" required>
+      </div>
+      <div class="form-group">
+        <label>درصد تخفیف <span style="color:#ef4444">*</span></label>
+        <div style="position:relative">
+          <input type="number" name="percentage" class="form-input"
+            placeholder="مثال: 15" min="1" max="90" required
+            id="campPct" oninput="previewDiscount(this.value)">
+          <span style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:#1a7a4a;font-weight:700">٪</span>
+        </div>
+        <span class="form-hint" id="pctPreview"></span>
+      </div>
+      <div class="form-group">
+        <label>دسته‌بندی</label>
+        <select name="category" class="form-select" style="height:42px;width:100%">
+          <option value="cosmetic">💄 اقلام آرایشی-بهداشتی</option>
+          <option value="all">💊 همه اقلام</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>تاریخ انقضا <span style="color:#ef4444">*</span></label>
+        <input type="date" name="expires_at" class="form-input" required
+          min="{% now 'Y-m-d' %}">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:.5rem">
+      <label>توضیحات (اختیاری)</label>
+      <textarea name="description" class="form-textarea" rows="2"
+        placeholder="توضیحات این کمپین برای یادداشت داخلی..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin-top:.5rem">
+      <i class="fas fa-rocket"></i> ایجاد کمپین
+    </button>
+  </form>
+</div>
+
+<!-- Campaigns list -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3><i class="fas fa-list"></i> کمپین‌های موجود</h3>
+    <span class="total-count">{{ campaigns|length }} کمپین</span>
+  </div>
+  {% if campaigns %}
+  <div style="padding:1.2rem;display:flex;flex-direction:column;gap:.8rem">
+    {% for c in campaigns %}
+    <div class="campaign-card {% if c.is_valid %}camp-active{% else %}camp-inactive{% endif %}">
+      <div class="camp-left">
+        <div class="camp-pct-circle {% if c.is_valid %}pct-active{% else %}pct-inactive{% endif %}">
+          {{ c.percentage }}٪
+        </div>
+      </div>
+      <div class="camp-body">
+        <div class="camp-name">{{ c.name }}</div>
+        <div class="camp-meta">
+          <span>
+            {% if c.category == 'cosmetic' %}💄 آرایشی-بهداشتی{% else %}💊 همه اقلام{% endif %}
+          </span>
+          <span><i class="fas fa-clock"></i> انقضا: {{ c.expires_at|jalali:"%Y/%m/%d" }}</span>
+          <span><i class="fas fa-user"></i> ایجاد توسط: {{ c.created_by.phone_number|default:"—" }}</span>
+          <span><i class="fas fa-calendar"></i> {{ c.created_at|jalali:"%Y/%m/%d" }}</span>
+        </div>
+        {% if c.description %}<div class="camp-desc">{{ c.description }}</div>{% endif %}
+      </div>
+      <div class="camp-actions">
+        {% if c.is_valid %}
+        <span class="status-badge badge-success"><i class="fas fa-check-circle"></i> فعال</span>
+        {% else %}
+        <span class="status-badge badge-danger"><i class="fas fa-times-circle"></i> غیرفعال / منقضی</span>
+        {% endif %}
+        <form method="post" action="{% url 'toggle_campaign' c.pk %}" style="margin-top:.5rem">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm {% if c.is_active %}btn-secondary{% else %}btn-success{% endif %}">
+            {% if c.is_active %}
+            <i class="fas fa-pause"></i> غیرفعال
+            {% else %}
+            <i class="fas fa-play"></i> فعال
+            {% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:3rem;color:#94a3b8">
+    <i class="fas fa-percent" style="font-size:3rem;display:block;margin-bottom:.8rem;opacity:.4"></i>
+    هنوز کمپینی ایجاد نشده است
+  </div>
+  {% endif %}
+</div>
+
+{% block extra_css %}
+<style>
+.campaign-form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.campaign-card{display:flex;align-items:center;gap:1.2rem;padding:1rem 1.2rem;border-radius:10px;border:1.5px solid #e2e8f0}
+.camp-active{border-color:#a7f3d0;background:#f0fff7}
+.camp-inactive{border-color:#e2e8f0;background:#f8fafc;opacity:.7}
+.camp-left{flex-shrink:0}
+.camp-pct-circle{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800}
+.pct-active{background:linear-gradient(135deg,#1a7a4a,#2dbe78);color:#fff;box-shadow:0 4px 12px rgba(26,122,74,.3)}
+.pct-inactive{background:#e2e8f0;color:#94a3b8}
+.camp-body{flex:1;min-width:0}
+.camp-name{font-weight:700;font-size:.95rem;margin-bottom:.4rem}
+.camp-meta{display:flex;flex-wrap:wrap;gap:.8rem;font-size:.75rem;color:#64748b}
+.camp-desc{margin-top:.4rem;font-size:.78rem;color:#94a3b8;font-style:italic}
+.camp-actions{flex-shrink:0;text-align:center}
+@media(max-width:900px){.campaign-form-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.campaign-form-grid{grid-template-columns:1fr}.campaign-card{flex-wrap:wrap}}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewDiscount(val) {
+  const p = document.getElementById('pctPreview');
+  const n = parseInt(val);
+  if (n > 0 && n < 100) {
+    const ex = 500000;
+    const saved = Math.round(ex * n / 100);
+    p.textContent = `مثال: از ${ex.toLocaleString('fa-IR')} تومان → ${(ex-saved).toLocaleString('fa-IR')} تومان (صرفه‌جویی: ${saved.toLocaleString('fa-IR')} ت)`;
+    p.style.color = '#1a7a4a';
+  } else { p.textContent = ''; }
+}
+</script>
+{% endblock %}
+{% endblock %}
