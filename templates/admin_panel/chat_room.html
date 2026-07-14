@@ -1,0 +1,199 @@
+{% extends 'admin_panel/base.html' %}
+{% load jalali_tags %}
+{% block title %}چت با {{ chat_user.phone_number }}{% endblock %}
+{% block page_title %}<i class="fas fa-comment-medical"></i> گفتگو با بیمار{% endblock %}
+
+{% block content %}
+<div class="admin-chat-wrapper">
+
+  <!-- Header -->
+  <div class="admin-chat-header">
+    <a href="{% url 'admin_chat_list' %}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-arrow-right"></i> بازگشت
+    </a>
+
+    <div class="chat-user-info">
+      <div class="chat-user-avatar"><i class="fas fa-user"></i></div>
+      <div>
+        <strong dir="ltr">{{ chat_user.phone_number }}</strong>
+        {% if chat_user.first_name %}
+        <small>{{ chat_user.first_name }} {{ chat_user.last_name }}</small>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick prescription link -->
+    {% with rx=chat_user.prescriptions.first %}
+    {% if rx %}
+    <a href="{% url 'admin_prescription_detail' rx.pk %}"
+       class="btn btn-sm btn-outline" title="آخرین نسخه این کاربر">
+      <i class="fas fa-file-prescription"></i> آخرین نسخه
+    </a>
+    {% endif %}
+    {% endwith %}
+
+    <div id="connStatus" class="conn-status">
+      <span class="conn-dot disconnected"></span>
+      <span id="connText">در حال اتصال...</span>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages admin-chat-msgs" id="chatMessages">
+    {% if not chat_messages %}
+    <div class="chat-empty">
+      <i class="fas fa-comment-dots"></i>
+      <p>هنوز پیامی رد و بدل نشده</p>
+      <small>اولین داروساز باشید که پاسخ می‌دهد!</small>
+    </div>
+    {% endif %}
+
+    {% for msg in chat_messages %}
+    <div class="message-row {% if msg.is_from_admin %}msg-admin{% else %}msg-user{% endif %}">
+      {% if not msg.is_from_admin %}
+      <div class="msg-avatar"><i class="fas fa-user"></i></div>
+      {% endif %}
+
+      <div class="message-bubble">
+        <div class="msg-sender">
+          {% if msg.is_from_admin %}داروساز{% else %}{{ chat_user.phone_number }}{% endif %}
+        </div>
+        <div class="msg-text">{{ msg.message }}</div>
+        <div class="msg-time">{{ msg.created_at|jalali:"%Y/%m/%d" }} {{ msg.created_at|time:"H:i" }}</div>
+      </div>
+
+      {% if msg.is_from_admin %}
+      <div class="msg-avatar admin-av"><i class="fas fa-user-md"></i></div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Input -->
+  <div class="chat-input-area admin-input-area">
+    <!-- Quick reply buttons -->
+    <div class="quick-replies">
+      <button onclick="quickReply('داروی شما آماده است، لطفاً به داروخانه مراجعه کنید.')" class="quick-btn">
+        ✅ داروها آماده است
+      </button>
+      <button onclick="quickReply('متأسفانه برخی اقلام موجود نیست، بزودی در دسترس خواهد بود.')" class="quick-btn">
+        ⚠️ اقلام ناموجود
+      </button>
+      <button onclick="quickReply('لطفاً کد ملی و کد رهگیری نسخه را از طریق داشبورد ثبت کنید.')" class="quick-btn">
+        📋 راهنمای ثبت نسخه
+      </button>
+    </div>
+
+    <div class="chat-input-row">
+      <input
+        type="text"
+        id="chatInput"
+        placeholder="پاسخ داروساز را بنویسید... (Enter برای ارسال)"
+        class="chat-input"
+        disabled
+      >
+      <button id="sendBtn" onclick="sendMessage()" disabled class="send-btn">
+        <i class="fas fa-paper-plane"></i>
+        ارسال
+      </button>
+    </div>
+  </div>
+</div>
+
+{% block extra_css %}
+<style>
+.quick-replies {
+  display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem;
+}
+.quick-btn {
+  background:#f0f7f4;border:1.5px solid #d4e8dc;color:#1a7a4a;
+  font-family:'Vazirmatn',sans-serif;font-size:.72rem;font-weight:600;
+  padding:.3rem .7rem;border-radius:20px;cursor:pointer;
+  transition:all .2s;
+}
+.quick-btn:hover { background:#1a7a4a;color:#fff;border-color:#1a7a4a; }
+.chat-empty small { display:block;font-size:.75rem;margin-top:.3rem;opacity:.7; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const wsUrl = 'ws://' + window.location.host + '{{ ws_url }}';
+let socket = null;
+
+function connectWS() {
+  socket = new WebSocket(wsUrl);
+
+  socket.onopen = () => {
+    document.getElementById('connText').textContent = 'متصل ✓';
+    document.querySelector('.conn-dot').className = 'conn-dot connected';
+    document.getElementById('chatInput').disabled = false;
+    document.getElementById('sendBtn').disabled = false;
+  };
+
+  socket.onclose = () => {
+    document.getElementById('connText').textContent = 'قطع شد، تلاش مجدد...';
+    document.querySelector('.conn-dot').className = 'conn-dot disconnected';
+    document.getElementById('chatInput').disabled = true;
+    document.getElementById('sendBtn').disabled = true;
+    setTimeout(connectWS, 3000);
+  };
+
+  socket.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.type === 'history') return; // already rendered server-side
+    if (data.type === 'message') appendMessage(data);
+  };
+}
+
+function appendMessage(data) {
+  const isAdmin = data.is_from_admin;
+  const row = document.createElement('div');
+  row.className = `message-row ${isAdmin ? 'msg-admin' : 'msg-user'}`;
+  row.innerHTML = `
+    ${!isAdmin ? '<div class="msg-avatar"><i class="fas fa-user"></i></div>' : ''}
+    <div class="message-bubble">
+      <div class="msg-sender">${isAdmin ? 'داروساز' : data.sender}</div>
+      <div class="msg-text">${escapeHtml(data.message)}</div>
+      <div class="msg-time">${data.time}</div>
+    </div>
+    ${isAdmin ? '<div class="msg-avatar admin-av"><i class="fas fa-user-md"></i></div>' : ''}
+  `;
+  const container = document.getElementById('chatMessages');
+  // Remove empty state if present
+  const empty = container.querySelector('.chat-empty');
+  if (empty) empty.remove();
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ message: msg }));
+  input.value = '';
+}
+
+function quickReply(text) {
+  const input = document.getElementById('chatInput');
+  input.value = text;
+  input.focus();
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('chatInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+// Scroll to bottom on load
+const msgs = document.getElementById('chatMessages');
+msgs.scrollTop = msgs.scrollHeight;
+
+connectWS();
+</script>
+{% endblock %}
+{% endblock %}
