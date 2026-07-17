@@ -254,3 +254,110 @@ code { background: #f1f5f9; padding: .15rem .4rem; border-radius: 4px; font-fami
 /* ── Broadcast history ── */
 .broadcast-history-item { transition:box-shadow .2s; }
 .broadcast-history-item:hover { box-shadow:0 2px 8px rgba(0,0,0,.06); }
+
+/* ========== TABLE FIX ========== */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px 15px;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ستون کد رهگیری */
+.admin-table th:first-child {
+    text-align: center;
+}
+
+.admin-table td:first-child {
+    text-align: center;
+}
+
+.admin-table td:first-child code {
+    display: inline-block;
+    text-align: center;
+    font-family: 'Vazirmatn', 'Courier New', monospace;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #1a7a4a;
+    background: #f0faf4;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0;
+    min-width: 100px;
+}
+
+/* ستون کد ملی */
+.admin-table th:nth-child(3) {
+    text-align: center;
+}
+
+.admin-table td:nth-child(3) {
+    text-align: center;
+}
+
+/* ستون کاربر */
+.admin-table td:nth-child(2) {
+    text-align: center;
+}
+
+/* ستون تاریخ */
+.admin-table td:nth-child(5) {
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ستون عملیات */
+.admin-table td:last-child {
+    text-align: center;
+    width: 60px;
+}
+
+/* هدر جدول */
+.admin-table th {
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: .82rem;
+    color: #374151;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* ردیف‌های جدول */
+.admin-table tbody tr:hover {
+    background: #f0fdf4;
+}
+
+/* status badge وسط‌چین */
+.status-badge {
+    display: inline-block;
+    text-align: center;
+    min-width: 80px;
+}
+
+/* empty row */
+.empty-row {
+    text-align: center;
+    color: #9ca3af;
+    padding: 30px !important;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+    .table-wrap {
+        overflow-x: auto;
+    }
+    .admin-table {
+        min-width: 700px;
+    }
+}
