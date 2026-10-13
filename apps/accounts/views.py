@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.views import View
+from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from .models import User, OTPCode
@@ -26,25 +27,36 @@ class LoginView(View):
         code = OTPCode.generate_code()
         OTPCode.objects.create(phone_number=phone_number, code=code)
 
-        # Print to console (replace with SMS service later)
-        print(f"\n{'='*50}")
-        print(f"  📱 کد تایید برای {phone_number}: {code}")
-        print(f"{'='*50}\n")
+        # TODO: وقتی درگاه پیامکی گرفتی، اینجا کد رو با SMS بفرست و
+        # OTP_SHOW_ON_SCREEN رو در settings.py روی False بذار.
+        if getattr(settings, 'OTP_SHOW_ON_SCREEN', True):
+            # نمایش کد روی صفحه‌ی تأیید (حالت موقت تا زمان راه‌اندازی پیامک)
+            request.session['otp_display_code'] = code
+            messages.success(request, 'کد تایید ساخته شد و در صفحه‌ی بعد نمایش داده می‌شود.')
+        else:
+            request.session.pop('otp_display_code', None)
+            messages.success(request, f'کد تایید به شماره {phone_number} ارسال شد.')
 
         request.session['otp_phone'] = phone_number
-        messages.success(request, f'کد تایید به شماره {phone_number} ارسال شد.')
         return redirect('verify_otp')
 
 
 class VerifyOTPView(View):
     template_name = 'accounts/verify_otp.html'
 
+    def _context(self, request):
+        show = getattr(settings, 'OTP_SHOW_ON_SCREEN', True)
+        return {
+            'phone': request.session.get('otp_phone'),
+            'otp_code': request.session.get('otp_display_code') if show else None,
+        }
+
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('dashboard')
         if not request.session.get('otp_phone'):
             return redirect('login')
-        return render(request, self.template_name, {'phone': request.session.get('otp_phone')})
+        return render(request, self.template_name, self._context(request))
 
     def post(self, request):
         phone_number = request.session.get('otp_phone')
@@ -71,6 +83,7 @@ class VerifyOTPView(View):
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
             del request.session['otp_phone']
+            request.session.pop('otp_display_code', None)
 
             if created:
                 messages.success(request, 'ثبت نام شما با موفقیت انجام شد!')
@@ -81,7 +94,7 @@ class VerifyOTPView(View):
 
         except OTPCode.DoesNotExist:
             messages.error(request, 'کد تایید اشتباه است.')
-            return render(request, self.template_name, {'phone': phone_number})
+            return render(request, self.template_name, self._context(request))
 
 
 class LogoutView(View):
