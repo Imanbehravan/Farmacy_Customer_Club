@@ -4,6 +4,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.http import JsonResponse
 from django.contrib import messages
+from django.utils import timezone
 
 from .models import Prescription, PrescriptionItem, INSURANCE_CHOICES, INSURANCE_BASE_KEYS, INSURANCE_SUPP_KEYS
 from apps.notifications.models import Notification
@@ -114,6 +115,13 @@ class AdminPrescriptionsView(View):
             'INSURANCE_CHOICES': INSURANCE_CHOICES,
         }
         return render(request, 'admin_panel/prescriptions.html', context)
+class AdminPrescriptionHistoryView(View):
+    @method_decorator(login_required)
+    @method_decorator(user_passes_test(is_admin, login_url='/login/'))
+    def get(self, request):
+        prescriptions = Prescription.objects.select_related('user').filter(status__in=['delivered', 'unclaimed']).order_by('-created_at')
+
+        return render(request, 'admin_panel/prescription_history.html', {'prescriptions': prescriptions})
 
 
 class AdminPrescriptionDetailView(View):
@@ -236,8 +244,15 @@ class AdminPrescriptionDetailView(View):
 
         # ── Step 5b: Mark as Delivered ──
         if action == 'delivered':
+            if prescription.status not in ['ready', 'partial']:
+                messages.error(request, 
+                'نسخه باید ابتدا آماده یا ناقص باشد.')
+                return redirect('admin_prescription_detail', pk=pk)
+            
             prescription.status = 'delivered'
-            prescription.save(update_fields=['status'])
+            prescription.delivered_at = timezone.now()
+            prescription.save(update_fields=['status','delivered_at'])
+            
 
             Notification.objects.create(
                 user=prescription.user,
@@ -249,6 +264,30 @@ class AdminPrescriptionDetailView(View):
                 notification_type='prescription'
             )
             messages.success(request, 'وضعیت نسخه به «تحویل داده شده» تغییر یافت.')
+            return redirect('admin_prescription_detail', pk=pk)
+
+        #Mark as Unclaimed
+        if action == 'unclaimed':
+            if prescription.status not in ['ready', 'partial']:
+                messages.error(request, 
+                'نسخه باید ابتدا آماده یا ناقص باشد.')
+                return redirect('admin_prescription_detail', pk=pk)
+            
+            prescription.status = 'unclaimed'
+            prescription.unclaimed_at = timezone.now()
+            prescription.save(update_fields=['status','unclaimed_at'])
+            
+
+            Notification.objects.create(
+                user=prescription.user,
+                title='داروهای شما تحویل داده نشده ⚠️',
+                message=(
+                    f'داروهای نسخه با کد رهگیری {prescription.tracking_code} '
+                    f'تحویل داده نشده است. لطفاً برای پیگیری با داروخانه تماس بگیرید.'
+                ),
+                notification_type='prescription'
+            )
+            messages.success(request, 'وضعیت نسخه به «تحویل داده نشده» تغییر یافت.')
             return redirect('admin_prescription_detail', pk=pk)
 
         # ── Step 5: Finalize — Partial ──
