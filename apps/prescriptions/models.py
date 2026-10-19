@@ -45,6 +45,7 @@ class Prescription(models.Model):
         ('ready', 'آماده تحویل'),
         ('partial', 'موجودی ناقص'),
         ('delivered', 'تحویل داده شده'),
+        ('unclaimed ', 'تحویل داده نشده'),
     ]
 
     user = models.ForeignKey(
@@ -80,6 +81,9 @@ class Prescription(models.Model):
     admin_notes = models.TextField(blank=True, verbose_name='توضیحات ادمین')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ثبت')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='آخرین بروزرسانی')
+    delivered_at = models.DateTimeField(null=True, blank=True, verbose_name='تاریخ تحویل')
+    unclaimed_at = models.DateTimeField(null=True, blank=True, verbose_name='تاریخ لغو')
+
 
     class Meta:
         verbose_name = 'نسخه'
@@ -106,6 +110,7 @@ class Prescription(models.Model):
             'ready': 'success',
             'partial': 'danger',
             'delivered': 'info',
+            'cancelled': 'secondary',
         }
         return mapping.get(self.status, 'secondary')
 
