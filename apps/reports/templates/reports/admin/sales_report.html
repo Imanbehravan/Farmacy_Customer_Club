@@ -1,0 +1,62 @@
+{% load reports_jalali %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>گزارش فروش نسخه‌ها</title>
+  <style>
+    body { font-family: Tahoma, sans-serif; margin: 24px; }
+    table { border-collapse: collapse; min-width: 420px; margin: 12px 0 24px; }
+    th, td { border: 1px solid #aaa; padding: 6px 12px; text-align: right; }
+    .box { margin-bottom: 20px; }
+    .errorlist { color: #b00020; }
+    .btn { display: inline-block; padding: 6px 14px; border-radius: 4px; text-decoration: none; color: #fff; background: #0d6efd; border: 0; cursor: pointer; }
+    .btn.green { background: #198754; } .btn.red { background: #dc3545; }
+  </style>
+</head>
+<body>
+  <h1>گزارش فروش نسخه‌ها</h1>
+
+  <div class="box">
+    <form method="get">
+      {{ filter.form.as_p }}
+      <button type="submit" class="btn">اعمال فیلتر</button>
+    </form>
+    <p>
+      {% if excel_url %}<a class="btn green" href="{{ excel_url }}?{{ request.GET.urlencode }}">دانلود Excel</a>{% endif %}
+      {% if pdf_url %}<a class="btn red" href="{{ pdf_url }}?{{ request.GET.urlencode }}">دانلود PDF</a>{% endif %}
+    </p>
+  </div>
+
+  <h2>جمع فروش: {{ summary.total|default:0 }} تومان</h2>
+  <p>
+    قبل از تخفیف: {{ summary.before_discount|default:0 }} تومان |
+    کل تخفیف: {{ summary.discount|default:0 }} تومان |
+    تعداد خرید: {{ summary.count }} |
+    تعداد نسخه: {{ summary.prescriptions }}
+  </p>
+
+  <table>
+    <tr><th>ماه</th><th>جمع فروش</th><th>تعداد خرید</th></tr>
+    {% for row in months %}
+      <tr>
+        <td>{{ row.m|jalali:"%Y/%m" }}</td>
+        <td>{{ row.total }}</td>
+        <td>{{ row.count }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3">داده‌ای برای این فیلتر نیست</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>وضعیت نسخه‌ها (بر اساس تاریخ ثبت نسخه)</h2>
+  <table>
+    <tr><th>وضعیت</th><th>تعداد نسخه</th></tr>
+    {% for r in prescription_stats %}
+      <tr><td>{{ r.status }}</td><td>{{ r.count }}</td></tr>
+    {% empty %}
+      <tr><td colspan="2">نسخه‌ای در این بازه نیست</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

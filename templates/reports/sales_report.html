@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>گزارش فروش نسخه‌ها</title>
+    <style>
+        body {
+            font-family: Tahoma, sans-serif;
+            margin: 30px;
+            background: #f5f6fa;
+            color: #222;
+        }
+        h1, h2 { color: #243447; }
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .card {
+            background: white;
+            padding: 18px;
+            border-radius: 8px;
+            min-width: 180px;
+            box-shadow: 0 2px 6px #ddd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: right;
+        }
+        th { background: #e9eef5; }
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        form { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>گزارش فروش نسخه‌ها</h1>
+
+<form method="get">
+    {{ filter.form.as_p }}
+    <button type="submit">اعمال فیلتر</button>
+    <a href="/admin-panel/reports/sales/">پاک کردن فیلترها</a>
+</form>
+
+<h2>خلاصه فروش</h2>
+
+<div class="summary">
+    <div class="card">
+        تعداد خریدها:
+        <strong>{{ summary.count|default:0 }}</strong>
+    </div>
+
+    <div class="card">
+        تعداد نسخه‌ها:
+        <strong>{{ summary.prescriptions|default:0 }}</strong>
+    </div>
+
+    <div class="card">
+        فروش قبل از تخفیف:
+        <strong>{{ summary.before_discount|default:0 }}</strong>
+    </div>
+
+    <div class="card">
+        مجموع تخفیف:
+        <strong>{{ summary.discount|default:0 }}</strong>
+    </div>
+
+    <div class="card">
+        فروش نهایی:
+        <strong>{{ summary.total|default:0 }}</strong>
+    </div>
+</div>
+
+<h2>فروش ماهانه</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>ماه</th>
+            <th>تعداد خرید</th>
+            <th>مبلغ فروش</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for month in months %}
+        <tr>
+            <td>{{ month.m|date:"Y/m" }}</td>
+            <td>{{ month.count }}</td>
+            <td>{{ month.total|default:0 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">اطلاعاتی برای نمایش وجود ندارد.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

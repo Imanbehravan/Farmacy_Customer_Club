@@ -45,7 +45,7 @@ class Prescription(models.Model):
         ('ready', 'آماده تحویل'),
         ('partial', 'موجودی ناقص'),
         ('delivered', 'تحویل داده شده'),
-        ('unclaimed ', 'تحویل داده نشده'),
+        ('unclaimed', 'تحویل داده نشده'),
     ]
 
     user = models.ForeignKey(
@@ -110,7 +110,7 @@ class Prescription(models.Model):
             'ready': 'success',
             'partial': 'danger',
             'delivered': 'info',
-            'cancelled': 'secondary',
+            'unclaimed': 'secondary',
         }
         return mapping.get(self.status, 'secondary')
 

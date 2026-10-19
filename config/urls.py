@@ -18,4 +18,5 @@ urlpatterns = [
     path('', include('apps.chat.urls')),
     path('', include('apps.blog.urls')),
     path('', include('apps.customer_club.urls')),
+     path("admin-panel/reports/", include("apps.reports.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
