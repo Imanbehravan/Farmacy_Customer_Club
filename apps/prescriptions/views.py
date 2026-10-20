@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.views import View
-from django.http import JsonResponse
+from django.http import JsonResponse, request
 from django.contrib import messages
 from django.utils import timezone
 
@@ -184,20 +184,43 @@ class AdminPrescriptionDetailView(View):
             return redirect('admin_prescription_detail', pk=pk)
 
         # ── Step 4: Finalize — All Ready ──
+                # ── Step 4: Finalize — All Ready ──
         if action == 'ready':
             if not prescription.items.exists():
                 messages.error(request, 'ابتدا اقلام نسخه را وارد کنید.')
                 return redirect('admin_prescription_detail', pk=pk)
 
             notes = request.POST.get('admin_notes', '').strip()
+            try:
+                orig_amt = int(request.POST.get('original_amount') or 0)
+                final_amt = int(request.POST.get('final_amount') or 0)
+            except ValueError:
+                messages.error(request, 'مبلغ باید فقط عدد باشد (بدون ویرگول).')
+                return redirect('admin_prescription_detail', pk=pk)
+
             prescription.status = 'ready'
             prescription.admin_notes = notes
+            prescription.original_amount = orig_amt
+            prescription.amount = final_amt
             prescription.save()
 
             items_list = '\n'.join(
                 f"✅ {i.drug_name} — {i.quantity}" + (f" | {i.dosage}" if i.dosage else "")
                 for i in prescription.items.all()
             )
+
+            Notification.objects.create(
+                user=prescription.user,
+                title='نسخه آماده تحویل است ✅',
+                message=(
+                    f'نسخه شما با کد رهگیری {prescription.tracking_code} آماده است.\n\n'
+                    f'اقلام آماده:\n{items_list}\n\n'
+                    f'برای دریافت داروها به داروخانه مراجعه کنید.'
+                ),
+                notification_type='prescription'
+            )
+            messages.success(request, 'نسخه «آماده» اعلام شد و کاربر مطلع گردید.')
+            return redirect('admin_prescription_detail', pk=pk)
 
             Notification.objects.create(
                 user=prescription.user,

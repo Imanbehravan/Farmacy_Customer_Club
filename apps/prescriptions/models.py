@@ -62,6 +62,8 @@ class Prescription(models.Model):
         default="free",
         verbose_name="نوع بیمه"
     )
+    original_amount = models.PositiveIntegerField(default = 0 , verbose_name="مبلغ نسخه (بدون تخفیف)")
+    amount = models.PositiveIntegerField(default=0, verbose_name="مبلغ پرداختی نهایی بیمار ")
     contract_status = models.CharField(
         max_length=20,
         choices=[

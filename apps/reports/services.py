@@ -1,12 +1,12 @@
 from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import TruncMonth
 
-from apps.customer_club.models import Purchase
+from apps.prescriptions.models import Prescription
 
 
 def base_queryset():
-    """داده‌های گزارش: خریدهایی که به یک نسخه وصل‌اند"""
-    return Purchase.objects.all()
+    """داده‌های گزارش: نسخه‌ها"""
+    return Prescription.objects.all()
 
 
 def summary(qs):
@@ -16,15 +16,14 @@ def summary(qs):
         before_discount=Sum("original_amount"),
         discount=Sum(F("original_amount") - F("amount"), filter=Q(original_amount__gt=0)),
         count=Count("id"),
-        prescriptions=Count("prescription", distinct=True),
     )
 
 
 def monthly_totals(qs):
-    """جمع فروش و تعداد خرید هر ماه"""
+    """جمع فروش و تعداد هر ماه"""
     return (
-        qs.annotate(m=TruncMonth("purchase_date"))   # تاریخ را به اول ماهش تبدیل می‌کند
-          .values("m")                               # بر اساس ماه گروه‌بندی کن
+        qs.annotate(m=TruncMonth("created_at"))
+          .values("m")
           .annotate(total=Sum("amount"), count=Count("id"))
           .order_by("m")
     )
