@@ -13,3 +13,4 @@ django-filter==25.1
 jdatetime==2.0.0
 weasyprint==59.0
 openpyxl==3.1.0
+Django-jalali-date==2.0.0

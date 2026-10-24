@@ -2,109 +2,268 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>گزارش فروش نسخه‌ها</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-soft: rgba(79, 70, 229, 0.12);
+            --bg: #f3f4f8;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+        }
+        * { box-sizing: border-box; }
         body {
-            font-family: Tahoma, sans-serif;
-            margin: 30px;
-            background: #f5f6fa;
-            color: #222;
+            font-family: Vazirmatn, Tahoma, sans-serif;
+            margin: 0;
+            padding: 32px;
+            background: var(--bg);
+            color: var(--text);
         }
-        h1, h2 { color: #243447; }
-        .summary {
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { font-size: 26px; margin: 0 0 24px; }
+        h2 { font-size: 18px; margin: 0 0 16px; }
+        .panel {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+        }
+        .filters p {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+            flex-direction: column;
+            gap: 6px;
+            margin: 0;
+            font-size: 13px;
+            color: var(--muted);
         }
-        .card {
-            background: white;
-            padding: 18px;
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+        }
+        .filters input {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            min-width: 180px;
-            box-shadow: 0 2px 6px #ddd;
+            font-family: inherit;
+            font-size: 14px;
+            background: #fafafa;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            margin-top: 15px;
+        .filters input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--primary-soft);
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: right;
-        }
-        th { background: #e9eef5; }
-        button {
-            padding: 8px 16px;
+        .actions { margin-top: 18px; display: flex; gap: 12px; align-items: center; }
+        .btn {
+            padding: 9px 22px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
             cursor: pointer;
         }
-        form { margin-bottom: 20px; }
+        .btn:hover { background: #4338ca; }
+        .link { color: var(--muted); font-size: 14px; text-decoration: none; }
+        .link:hover { color: var(--primary); }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 18px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+            border-top: 4px solid var(--primary);
+        }
+        .stat .label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+        .stat .value { font-size: 22px; font-weight: bold; }
+        .stat.green { border-top-color: #10b981; }
+        .stat.orange { border-top-color: #f59e0b; }
+        .stat.red { border-top-color: #ef4444; }
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 14px; text-align: right; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { background: #f9fafb; color: var(--muted); font-weight: 600; }
+        tbody tr:hover { background: #f9fafb; }
+        tbody tr:last-child td { border-bottom: 0; }
+        .chart-wrap { position: relative; height: 340px; }
+        .up   { color: #059669; font-weight: 600; }
+        .down { color: #dc2626; font-weight: 600; }
+        .neutral { color: var(--muted); }
     </style>
 </head>
 <body>
+<div class="container">
 
-<h1>گزارش فروش نسخه‌ها</h1>
+    <h1>گزارش فروش نسخه‌ها</h1>
 
-<form method="get">
-    {{ filter.form.as_p }}
-    <button type="submit">اعمال فیلتر</button>
-    <a href="/admin-panel/reports/sales/">پاک کردن فیلترها</a>
-</form>
-
-<h2>خلاصه فروش</h2>
-
-<div class="summary">
-    <div class="card">
-        تعداد خریدها:
-        <strong>{{ summary.count|default:0 }}</strong>
+    <div class="panel filters">
+        <form method="get">
+            <div class="filters-grid">
+                {{ filter.form.as_p }}
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn">اعمال فیلتر</button>
+                <a class="link" href="/admin-panel/reports/sales/">پاک کردن فیلترها</a>
+            </div>
+        </form>
     </div>
 
-    <div class="card">
-        تعداد نسخه‌ها:
-        <strong>{{ summary.prescriptions|default:0 }}</strong>
+    <div class="summary">
+        <div class="stat orange">
+            <div class="label">تعداد نسخه‌ها</div>
+            <div class="value">{{ summary.count|default:0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">مبلغ نسخه‌ها (بدون تخفیف)</div>
+            <div class="value">{{ summary.before_discount|default:0 }}</div>
+        </div>
+        <div class="stat red">
+            <div class="label">مجموع تخفیف / سهم بیمه</div>
+            <div class="value">{{ summary.discount|default:0 }}</div>
+        </div>
+        <div class="stat green">
+            <div class="label">پرداختی نهایی بیماران</div>
+            <div class="value">{{ summary.total|default:0 }}</div>
+        </div>
     </div>
 
-    <div class="card">
-        فروش قبل از تخفیف:
-        <strong>{{ summary.before_discount|default:0 }}</strong>
+    <div class="grid">
+        <div class="panel">
+            <h2>فروش ماهانه</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ماه</th>
+                        <th>تعداد خرید</th>
+                        <th>مبلغ فروش</th>
+                        <th>تغییر</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in months %}
+                    <tr>
+                        <td>{{ month.label }}</td>
+                        <td>{{ month.count }}</td>
+                        <td>{{ month.total|default:0 }}</td>
+                        <td>
+                            {% if month.direction == "up" %}
+                                <span class="up">▲ {{ month.change_abs }}٪</span>
+                            {% elif month.direction == "down" %}
+                                <span class="down">▼ {{ month.change_abs }}٪</span>
+                            {% else %}
+                                <span class="neutral">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">اطلاعاتی برای نمایش وجود ندارد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h2>نمودار فروش ماهانه</h2>
+            <div class="chart-wrap">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        مجموع تخفیف:
-        <strong>{{ summary.discount|default:0 }}</strong>
-    </div>
-
-    <div class="card">
-        فروش نهایی:
-        <strong>{{ summary.total|default:0 }}</strong>
-    </div>
 </div>
 
-<h2>فروش ماهانه</h2>
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_values|json_script:"chart-values" }}
+{{ chart_counts|json_script:"chart-counts" }}
+<script>
+    Chart.defaults.font.family = 'Vazirmatn, Tahoma';
 
-<table>
-    <thead>
-        <tr>
-            <th>ماه</th>
-            <th>تعداد خرید</th>
-            <th>مبلغ فروش</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for month in months %}
-        <tr>
-            <td>{{ month.m|date:"Y/m" }}</td>
-            <td>{{ month.count }}</td>
-            <td>{{ month.total|default:0 }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="3">اطلاعاتی برای نمایش وجود ندارد.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    const labels = JSON.parse(document.getElementById('chart-labels').textContent);
+    const sales  = JSON.parse(document.getElementById('chart-values').textContent);
+    const counts = JSON.parse(document.getElementById('chart-counts').textContent);
+
+    const segColor = ctx => {
+        const i = ctx.p1DataIndex;
+        return sales[i] >= sales[i - 1] ? '#10b981' : '#ef4444';
+    };
+
+    new Chart(document.getElementById('salesChart'), {
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'مبلغ فروش (تومان)',
+                    data: sales,
+                    yAxisID: 'ySales',
+                    borderColor: '#4f46e5',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 3,
+                    segment: { borderColor: segColor },
+                    order: 1
+                },
+                {
+                    type: 'bar',
+                    label: 'تعداد خرید',
+                    data: counts,
+                    yAxisID: 'yCount',
+                    backgroundColor: 'rgba(148, 163, 184, 0.35)',
+                    borderRadius: 6,
+                    order: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                ySales: {
+                    position: 'left',
+                    beginAtZero: true,
+                    grid: { color: '#eef0f4' },
+                    ticks: { callback: v => v.toLocaleString('fa-IR') }
+                },
+                yCount: {
+                    position: 'right',
+                    beginAtZero: true,
+                    grid: { display: false },
+                    ticks: { precision: 0, callback: v => v.toLocaleString('fa-IR') }
+                },
+                x: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: c => c.dataset.yAxisID === 'ySales'
+                            ? 'فروش: ' + c.parsed.y.toLocaleString('fa-IR') + ' تومان'
+                            : 'تعداد خرید: ' + c.parsed.y.toLocaleString('fa-IR')
+                    }
+                }
+            }
+        }
+    });
+</script>
 
 </body>
 </html>

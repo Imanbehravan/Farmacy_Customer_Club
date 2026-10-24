@@ -22,7 +22,9 @@ INSTALLED_APPS = [
     'apps.notifications',
     'apps.chat',
     'apps.blog',
-    #'reports', 
+    'django_filters',
+    "apps.reports",
+    "jalali_date",
 ]
 
 MIDDLEWARE = [
@@ -51,6 +53,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+             "builtins": ["apps.reports.templatetags.reports_jalali"],
         },
     },
 ]
