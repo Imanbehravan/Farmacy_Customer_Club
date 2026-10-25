@@ -109,6 +109,13 @@
         .up   { color: #059669; font-weight: 600; }
         .down { color: #dc2626; font-weight: 600; }
         .neutral { color: var(--muted); }
+       
+
+        .chart-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .chart-filters input {
+            padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 8px; font-family: inherit; width: 140px;
+        }
     </style>
 </head>
 <body>
@@ -119,13 +126,17 @@
     <div class="panel filters">
         <form method="get">
             <div class="filters-grid">
-                {{ filter.form.as_p }}
+                <p>{{ filter.form.date_from.label_tag }} {{ filter.form.date_from }}</p>
+                <p>{{ filter.form.date_to.label_tag }} {{ filter.form.date_to }}</p>
+                <p>{{ filter.form.min_amount.label_tag }} {{ filter.form.min_amount }}</p>
+                <p>{{ filter.form.max_amount.label_tag }} {{ filter.form.max_amount }}</p>
+                <p>{{ filter.form.phone.label_tag }} {{ filter.form.phone }}</p>
             </div>
             <div class="actions">
                 <button type="submit" class="btn">اعمال فیلتر</button>
                 <a class="link" href="/admin-panel/reports/sales/">پاک کردن فیلترها</a>
                 <a class="btn" style="background:#dc2626;text-decoration:none"
-                href="{% url 'sales_pdf' %}?{{ request.GET.urlencode }}">دانلود PDF</a>
+                 href="{% url 'reports:sales_pdf' %}?{{ request.GET.urlencode }}">دانلود PDF</a>
             </div>
         </form>
     </div>
@@ -186,6 +197,12 @@
 
         <div class="panel">
             <h2>نمودار فروش ماهانه</h2>
+            <div class="chart-filters">
+                <input id="cf-year"  type="number" placeholder="سال (1405)">
+                <input id="cf-month" type="number" placeholder="ماه (1-12)" min="1" max="12">
+                <input id="cf-day"   type="number" placeholder="روز (1-31)" min="1" max="31">
+                <button type="button" id="cf-reset" class="btn" style="background:#6b7280">همه</button>
+            </div>
             <div class="chart-wrap">
                 <canvas id="salesChart"></canvas>
             </div>
@@ -200,7 +217,17 @@
 <script>
     Chart.defaults.font.family = 'Vazirmatn, Tahoma';
 
-    const FEED_URL = "{% url 'sales_feed' %}" + window.location.search;
+    const FEED_BASE = "{% url 'reports:sales_feed' %}";
+
+    function feedUrl() {
+         const params = new URLSearchParams(window.location.search);
+        ['year', 'month', 'day'].forEach(k => {
+             params.delete(k);
+             const v = document.getElementById('cf-' + k).value.trim();
+             if (v) params.set(k, v);
+        });
+        return FEED_BASE + '?' + params.toString();
+    }
     const fa = v => Number(v).toLocaleString('fa-IR');
 
     const chart = new Chart(document.getElementById('salesChart'), {
@@ -241,21 +268,34 @@
         }
     });
 
-    let lastCount = -1;
-    async function refresh() {
+    let lastKey = '';
+    async function refresh(force = false) {
         try {
-            const r = await fetch(FEED_URL, { headers: { 'Accept': 'application/json' } });
+            const url = feedUrl();
+            const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
             if (!r.ok) return;
             const data = await r.json();
-            if (data.rows.length === lastCount) return;   // تغییری نیست
-            lastCount = data.rows.length;
+            const key = url + '|' + JSON.stringify(data.rows.map(x => x.amount));
+            if (!force && key === lastKey) return;
+            lastKey = key;
             chart.data.labels = data.rows.map(x => x.label);
             chart.data.datasets[0].data = data.rows.map(x => x.amount);
             chart.update();
         } catch (e) { /* خطای شبکه: دور بعدی دوباره تلاش می‌کنه */ }
     }
-    refresh();
+
+    ['cf-year', 'cf-month', 'cf-day'].forEach(id =>
+        document.getElementById(id).addEventListener('input', () => refresh(true))
+    );
+    document.getElementById('cf-reset').addEventListener('click', () => {
+        ['cf-year', 'cf-month', 'cf-day'].forEach(id => document.getElementById(id).value = '');
+        refresh(true);
+    });
+
+    refresh(true);
     setInterval(refresh, 5000);   // هر ۵ ثانیه
+
+    
 </script>
 
 </body>

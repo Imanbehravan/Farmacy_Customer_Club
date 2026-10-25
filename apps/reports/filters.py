@@ -35,7 +35,41 @@ class PurchaseFilter(df.FilterSet):
     max_amount = df.NumberFilter(field_name="amount", lookup_expr="lte", label="حداکثر مبلغ")
     phone = df.CharFilter(field_name="user__phone_number", lookup_expr="icontains",
                           label="شماره موبایل")
+    year = df.NumberFilter(method = "noop", label="سال")
+    month = df.NumberFilter(method = "noop", label="ماه")
+    day = df.NumberFilter(method = "noop", label="روز")
 
     class Meta:
         model = Prescription
         fields = []
+        
+    def noop(self, queryset, name, value):
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        data = self.form.cleaned_data
+        y, m, d = data.get("year"), data.get("month"), data.get("day")
+        if not y:
+            return queryset
+
+        y = int(y)
+        try:
+            if m and d:
+                start = jdatetime.date(y, int(m), int(d))
+                end = start + jdatetime.timedelta(days=1)
+            elif m:
+                start = jdatetime.date(y, int(m), 1)
+                end = (jdatetime.date(y + 1, 1, 1) if int(m) == 12
+                       else jdatetime.date(y, int(m) + 1, 1))
+            else:
+                start = jdatetime.date(y, 1, 1)
+                end = jdatetime.date(y + 1, 1, 1)
+        except ValueError:
+            return queryset.none()
+
+        return queryset.filter(
+            created_at__date__gte=start.togregorian(),
+            created_at__date__lt=end.togregorian(),
+        )
