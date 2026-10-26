@@ -67,21 +67,30 @@ def sales_report(request):
         "chart_values": chart_values,
         "chart_counts": chart_counts,
     }
-    return render(request, "reports/sales_report.html", context)
+    return render(request, "reports/admin/sales_report.html", context)
 @staff_only
 def sales_feed(request):
     f, qs = _filtered(request)
-    rows = []
-    for p in qs.order_by("created_at")[:500]:
-        t = timezone.localtime(p.created_at)
-        j = jdatetime.datetime.fromgregorian(datetime=t)
-        rows.append({
-            "id": p.id,
-            "label": j.strftime("%Y/%m/%d %H:%M"),
-            "amount": p.amount,
-        })
-    return JsonResponse({"rows": rows, "summary": summary(qs)})
+    group = request.GET.get("group", "month")
 
+    buckets = {}
+    for p in qs.order_by("created_at"):
+        j = jdatetime.datetime.fromgregorian(datetime=timezone.localtime(p.created_at))
+        if group == "year":
+            label = j.strftime("%Y")
+        elif group == "day":
+            label = j.strftime("%Y/%m/%d")
+        else:
+            label = j.strftime("%Y/%m")
+        buckets[label] = buckets.get(label, 0) + float(p.amount or 0)
+
+    rows = [{"label": k, "amount": v} for k, v in buckets.items()]
+    if group == "day":
+        rows = rows[-30:]    # ۳۰ روز آخر
+    elif group == "month":
+        rows = rows[-12:]    # ۱۲ ماه آخر
+
+    return JsonResponse({"rows": rows, "summary": summary(qs)})
 
 @staff_only
 def sales_pdf(request):
@@ -105,7 +114,7 @@ def sales_pdf(request):
         })
 
     now = jdatetime.datetime.fromgregorian(datetime=timezone.localtime()).strftime("%Y/%m/%d %H:%M")
-    html = render_to_string("reports/sales_pdf.html", {
+    html = render_to_string("reports/admin/Sales_pdf.html", {
         "rows": rows,
         "summary": summary(qs),
         "months": jalali_monthly(qs),

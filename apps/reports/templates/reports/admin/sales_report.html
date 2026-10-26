@@ -116,6 +116,8 @@
             padding: 8px 12px; border: 1px solid var(--border);
             border-radius: 8px; font-family: inherit; width: 140px;
         }
+        .group-btn { background: #e5e7eb; color: var(--text); }
+        .group-btn.active { background: var(--primary); color: #fff; }
     </style>
 </head>
 <body>
@@ -196,13 +198,12 @@
         </div>
 
         <div class="panel">
-            <h2>نمودار فروش ماهانه</h2>
-            <div class="chart-filters">
-                <input id="cf-year"  type="number" placeholder="سال (1405)">
-                <input id="cf-month" type="number" placeholder="ماه (1-12)" min="1" max="12">
-                <input id="cf-day"   type="number" placeholder="روز (1-31)" min="1" max="31">
-                <button type="button" id="cf-reset" class="btn" style="background:#6b7280">همه</button>
-            </div>
+            <h2>نمودار فروش </h2>
+                <div class="chart-filters">
+                    <button type="button" class="btn group-btn" data-group="year">سالانه</button>
+                    <button type="button" class="btn group-btn active" data-group="month">ماهانه</button>
+                    <button type="button" class="btn group-btn" data-group="day">روزانه</button>
+                </div>
             <div class="chart-wrap">
                 <canvas id="salesChart"></canvas>
             </div>
@@ -215,38 +216,29 @@
 {{ chart_values|json_script:"chart-values" }}
 {{ chart_counts|json_script:"chart-counts" }}
 <script>
-    Chart.defaults.font.family = 'Vazirmatn, Tahoma';
+       Chart.defaults.font.family = 'Vazirmatn, Tahoma';
 
     const FEED_BASE = "{% url 'reports:sales_feed' %}";
+    const fa = v => Number(v).toLocaleString('fa-IR');
+    let group = 'month';
 
     function feedUrl() {
-         const params = new URLSearchParams(window.location.search);
-        ['year', 'month', 'day'].forEach(k => {
-             params.delete(k);
-             const v = document.getElementById('cf-' + k).value.trim();
-             if (v) params.set(k, v);
-        });
+        const params = new URLSearchParams(window.location.search);
+        params.set('group', group);
         return FEED_BASE + '?' + params.toString();
     }
-    const fa = v => Number(v).toLocaleString('fa-IR');
 
     const chart = new Chart(document.getElementById('salesChart'), {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: [],
             datasets: [{
-                label: 'مبلغ هر نسخه (تومان)',
+                label: 'مبلغ فروش (تومان)',
                 data: [],
+                backgroundColor: 'rgba(79,70,229,0.75)',
                 borderColor: '#4f46e5',
-                backgroundColor: 'rgba(79,70,229,0.1)',
-                borderWidth: 3,
-                tension: 0.25,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#4f46e5',
-                pointBorderWidth: 3,
-                fill: false
+                borderWidth: 1,
+                borderRadius: 6
             }]
         },
         options: {
@@ -275,27 +267,26 @@
             const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
             if (!r.ok) return;
             const data = await r.json();
-            const key = url + '|' + JSON.stringify(data.rows.map(x => x.amount));
+            const key = url + '|' + JSON.stringify(data.rows);
             if (!force && key === lastKey) return;
             lastKey = key;
             chart.data.labels = data.rows.map(x => x.label);
             chart.data.datasets[0].data = data.rows.map(x => x.amount);
             chart.update();
-        } catch (e) { /* خطای شبکه: دور بعدی دوباره تلاش می‌کنه */ }
+        } catch (e) { console.error(e); }
     }
 
-    ['cf-year', 'cf-month', 'cf-day'].forEach(id =>
-        document.getElementById(id).addEventListener('input', () => refresh(true))
-    );
-    document.getElementById('cf-reset').addEventListener('click', () => {
-        ['cf-year', 'cf-month', 'cf-day'].forEach(id => document.getElementById(id).value = '');
-        refresh(true);
+    document.querySelectorAll('.group-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            group = btn.dataset.group;
+            document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            refresh(true);
+        });
     });
 
     refresh(true);
-    setInterval(refresh, 5000);   // هر ۵ ثانیه
-
-    
+    setInterval(refresh, 5000);
 </script>
 
 </body>

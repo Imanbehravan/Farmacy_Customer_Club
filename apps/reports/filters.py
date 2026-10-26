@@ -33,8 +33,7 @@ class PurchaseFilter(df.FilterSet):
     )
     min_amount = df.NumberFilter(field_name="amount", lookup_expr="gte", label="حداقل مبلغ")
     max_amount = df.NumberFilter(field_name="amount", lookup_expr="lte", label="حداکثر مبلغ")
-    phone = df.CharFilter(field_name="user__phone_number", lookup_expr="icontains",
-                          label="شماره موبایل")
+    phone = df.CharFilter(method="filter_phone", label="شماره موبایل")
     year = df.NumberFilter(method = "noop", label="سال")
     month = df.NumberFilter(method = "noop", label="ماه")
     day = df.NumberFilter(method = "noop", label="روز")
@@ -46,6 +45,16 @@ class PurchaseFilter(df.FilterSet):
     def noop(self, queryset, name, value):
 
         return queryset
+    def filter_phone(self, queryset, name, value):
+        # ارقام فارسی/عربی -> انگلیسی
+        v = value.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789"))
+        v = "".join(ch for ch in v if ch.isdigit())   # حذف فاصله، +، خط تیره
+        if v.startswith("98"):
+            v = v[2:]
+        v = v.lstrip("0")
+        if not v:
+            return queryset
+        return queryset.filter(user__phone_number__contains=v)
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
