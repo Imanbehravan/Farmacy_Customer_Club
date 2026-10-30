@@ -1,0 +1,283 @@
+{% extends "admin_panel/base.html" %}
+
+{% block title %}گزارش مالی{% endblock %}
+{% block page_title %}گزارش فروش نسخه‌ها{% endblock %}
+
+{% block extra_css %}
+<style>
+    .sales-report {
+        --primary: #4f46e5;
+        --primary-soft: rgba(79, 70, 229, 0.12);
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        color: var(--text);
+    }
+    .sales-report * { box-sizing: border-box; }
+    .sales-report h2 { font-size: 18px; margin: 0 0 16px; }
+
+    .sales-report .panel {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 22px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+    }
+
+    .sales-report .filters p {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+    }
+    .sales-report .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 16px;
+    }
+    .sales-report .filters input {
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        background: #fafafa;
+    }
+    .sales-report .filters input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: #fff;
+        box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+    .sales-report .actions { margin-top: 18px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .sales-report .btn {
+        display: inline-block;
+        padding: 9px 22px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--primary);
+        color: #fff;
+        font-family: inherit;
+        font-size: 14px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .sales-report .btn:hover { background: #4338ca; }
+    .sales-report .link { color: var(--muted); font-size: 14px; text-decoration: none; }
+    .sales-report .link:hover { color: var(--primary); }
+
+    .sales-report .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .sales-report .stat {
+        background: var(--card);
+        border-radius: 14px;
+        padding: 18px 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+        border-top: 4px solid var(--primary);
+    }
+    .sales-report .stat .label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .sales-report .stat .value { font-size: 22px; font-weight: bold; }
+    .sales-report .stat.green { border-top-color: #10b981; }
+    .sales-report .stat.orange { border-top-color: #f59e0b; }
+    .sales-report .stat.red { border-top-color: #ef4444; }
+
+    .sales-report .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .sales-report .grid { grid-template-columns: 1fr; } }
+
+    .sales-report table { width: 100%; border-collapse: collapse; }
+    .sales-report th,
+    .sales-report td { padding: 12px 14px; text-align: right; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .sales-report th { background: #f9fafb; color: var(--muted); font-weight: 600; }
+    .sales-report tbody tr:hover { background: #f9fafb; }
+    .sales-report tbody tr:last-child td { border-bottom: 0; }
+    .sales-report .chart-wrap { position: relative; height: 340px; }
+
+    .sales-report .up   { color: #059669; font-weight: 600; }
+    .sales-report .down { color: #dc2626; font-weight: 600; }
+    .sales-report .neutral { color: var(--muted); }
+
+    .sales-report .chart-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .sales-report .group-btn { background: #e5e7eb; color: var(--text); }
+    .sales-report .group-btn:hover { background: #d1d5db; }
+    .sales-report .group-btn.active { background: var(--primary); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sales-report">
+
+    <div class="panel filters">
+        <form method="get">
+            <div class="filters-grid">
+                <p>{{ filter.form.date_from.label_tag }} {{ filter.form.date_from }}</p>
+                <p>{{ filter.form.date_to.label_tag }} {{ filter.form.date_to }}</p>
+                <p>{{ filter.form.min_amount.label_tag }} {{ filter.form.min_amount }}</p>
+                <p>{{ filter.form.max_amount.label_tag }} {{ filter.form.max_amount }}</p>
+                <p>{{ filter.form.phone.label_tag }} {{ filter.form.phone }}</p>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn">اعمال فیلتر</button>
+                <a class="link" href="{% url 'reports:sales_report' %}">پاک کردن فیلترها</a>
+                <a href="{% url 'reports:sales_report_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+                 دریافت خروجی اکسل
+                </a>
+                <!--<a class="btn" style="background:#dc2626"
+                   href="{% url 'reports:sales_pdf' %}?{{ request.GET.urlencode }}">دانلود PDF</a>-->
+            </div>
+        </form>
+    </div>
+
+    <div class="summary">
+        <div class="stat orange">
+            <div class="label">تعداد نسخه‌ها</div>
+            <div class="value">{{ summary.count|default:0 }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">مبلغ نسخه‌ها (بدون تخفیف)</div>
+            <div class="value">{{ summary.before_discount|default:0 }}</div>
+        </div>
+        <div class="stat red">
+            <div class="label">مجموع تخفیف / سهم بیمه</div>
+            <div class="value">{{ summary.discount|default:0 }}</div>
+        </div>
+        <div class="stat green">
+            <div class="label">پرداختی نهایی بیماران</div>
+            <div class="value">{{ summary.total|default:0 }}</div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="panel">
+            <h2>فروش ماهانه</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ماه</th>
+                        <th>تعداد خرید</th>
+                        <th>مبلغ فروش</th>
+                        <th>تغییر</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month in months %}
+                    <tr>
+                        <td>{{ month.label }}</td>
+                        <td>{{ month.count }}</td>
+                        <td>{{ month.total|default:0 }}</td>
+                        <td>
+                            {% if month.direction == "up" %}
+                                <span class="up">▲ {{ month.change_abs }}٪</span>
+                            {% elif month.direction == "down" %}
+                                <span class="down">▼ {{ month.change_abs }}٪</span>
+                            {% else %}
+                                <span class="neutral">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">اطلاعاتی برای نمایش وجود ندارد.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h2>نمودار فروش</h2>
+            <div class="chart-filters">
+                <button type="button" class="btn group-btn" data-group="year">سالانه</button>
+                <button type="button" class="btn group-btn active" data-group="month">ماهانه</button>
+                <button type="button" class="btn group-btn" data-group="day">روزانه</button>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    Chart.defaults.font.family = 'Vazirmatn, Tahoma';
+
+    const FEED_BASE = "{% url 'reports:sales_feed' %}";
+    const fa = v => Number(v).toLocaleString('fa-IR');
+    let group = 'month';
+
+    function feedUrl() {
+        const params = new URLSearchParams(window.location.search);
+        params.set('group', group);
+        return FEED_BASE + '?' + params.toString();
+    }
+
+    const chart = new Chart(document.getElementById('salesChart'), {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'مبلغ فروش (تومان)',
+                data: [],
+                backgroundColor: 'rgba(79,70,229,0.75)',
+                borderColor: '#4f46e5',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 400 },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#eef0f4' },
+                     ticks: { callback: v => fa(v) } },
+                x: { grid: { display: false },
+                     ticks: { maxRotation: 45, autoSkip: true } }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: {
+                    label: c => fa(c.parsed.y) + ' تومان'
+                } }
+            }
+        }
+    });
+
+    let lastKey = '';
+    async function refresh(force = false) {
+        try {
+            const url = feedUrl();
+            const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!r.ok) return;
+            const data = await r.json();
+            const key = url + '|' + JSON.stringify(data.rows);
+            if (!force && key === lastKey) return;
+            lastKey = key;
+            chart.data.labels = data.rows.map(x => x.label);
+            chart.data.datasets[0].data = data.rows.map(x => x.amount);
+            chart.update();
+        } catch (e) { console.error(e); }
+    }
+
+    document.querySelectorAll('.sales-report .group-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            group = btn.dataset.group;
+            document.querySelectorAll('.sales-report .group-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            refresh(true);
+        });
+    });
+
+    refresh(true);
+    // هر ۳۰ ثانیه و فقط وقتی تب فعال است
+    setInterval(() => { if (!document.hidden) refresh(); }, 30000);
+</script>
+{% endblock %}

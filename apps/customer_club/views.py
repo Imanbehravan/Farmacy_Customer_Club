@@ -142,6 +142,8 @@ class AdminPurchasesView(View):
             prescription=prescription,
             description=description,
         )
+        print("DEBUG: Purchase created:", purchase.pk, flush=True)
+        print("DEBUG: Purchase count:", Purchase.objects.count(), flush=True)
 
         # Invalidate personal loyalty discount if used
         if loyalty_id and discount_src == 'loyalty':

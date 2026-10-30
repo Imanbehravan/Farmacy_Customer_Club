@@ -284,6 +284,16 @@
           <textarea name="admin_notes" class="form-textarea" rows="2"
             placeholder="در صورت نیاز توضیحی اضافه کنید..."></textarea>
         </div>
+        <div style="margin: 15px 0; padding: 15px; background-color: #f0f8ff; border: 1px solid #cce5ff; border-radius: 5px;">
+        <h5 style="margin-bottom: 15px; color: #004085; font-weight: bold;">ثبت اطلاعات مالی (الزامی)</h5>
+        
+        <label for="orig_amt">مبلغ کل داروها (بدون تخفیف/بیمه - تومان):</label>
+        <input type="number" id="orig_amt" name="original_amount" value="0" style="width: 100%; margin-bottom: 15px;" required>
+        
+        <label for="final_amt">مبلغ پرداختی نهایی بیمار (با کسر سهم بیمه - تومان):</label>
+        <input type="number" id="final_amt" name="final_amount" value="0" style="width: 100%;" required>
+        </div>
+        
         <button type="submit" class="btn btn-success btn-full"
           {% if not prescription.items.exists %}disabled title="ابتدا اقلام را وارد کنید"{% endif %}
           onclick="return confirm('تأیید می‌کنید که تمامی اقلام آماده‌اند و اطلاعیه برای بیمار ارسال شود؟')">
@@ -327,35 +337,59 @@
     <h3><i class="fas fa-check-double"></i> وضعیت نهایی ثبت شده</h3>
   </div>
   <div style="padding:1.5rem;text-align:center">
+{% if prescription.status == 'ready' or prescription.status == 'partial' %}
+
     {% if prescription.status == 'ready' %}
-    <i class="fas fa-check-circle" style="font-size:3rem;color:#10b981;display:block;margin-bottom:.8rem"></i>
-    <strong style="font-size:1.1rem;color:#065f46">نسخه آماده تحویل اعلام شده است</strong>
-    {% if prescription.admin_notes %}
-    <div class="notes-box" style="margin:1rem auto;text-align:right;max-width:400px">{{ prescription.admin_notes }}</div>
+        <i class="fas fa-check-circle" style="font-size:3rem;color:#10b981;display:block;margin-bottom:.8rem"></i>
+        <strong style="font-size:1.1rem;color:#065f46">نسخه آماده تحویل اعلام شده است</strong>
+    {% else %}
+        <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#f59e0b;display:block;margin-bottom:.8rem"></i>
+        <strong style="font-size:1.1rem;color:#92400e">موجودی ناقص — کاربر مطلع شده است</strong>
     {% endif %}
+
+    {% if prescription.admin_notes %}
+        <div class="notes-box" style="margin:1rem auto;text-align:right;max-width:400px">
+            {{ prescription.admin_notes }}
+        </div>
+    {% endif %}
+
     <form method="post" style="margin-top:1.2rem">
-      {% csrf_token %}
-      <button type="submit" name="action" value="delivered"
-        class="btn btn-primary"
-        style="font-size:.95rem;padding:.8rem 2rem"
-        onclick="return confirm('تأیید تحویل دارو به بیمار؟')">
-        <i class="fas fa-hand-holding-medical"></i>
-        ثبت تحویل — داروها به بیمار تحویل داده شد
-      </button>
+        {% csrf_token %}
+        <button type="submit" name="action" value="delivered"
+                class="btn btn-primary"
+                style="font-size:.95rem;padding:.8rem 2rem"
+                onclick="return confirm('تأیید تحویل دارو به بیمار؟')">
+            <i class="fas fa-hand-holding-medical"></i>
+            ثبت تحویل دارو
+        </button>
     </form>
-    {% elif prescription.status == 'partial' %}
-    <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#f59e0b;display:block;margin-bottom:.8rem"></i>
-    <strong style="font-size:1.1rem;color:#92400e">موجودی ناقص — کاربر مطلع شده است</strong>
-    {% if prescription.admin_notes %}
-    <div class="notes-box" style="margin-top:1rem;text-align:right">{{ prescription.admin_notes }}</div>
-    {% endif %}
-    {% elif prescription.status == 'delivered' %}
+
+    <form method="post" style="margin-top:10px">
+        {% csrf_token %}
+        <button type="submit" name="action" value="unclaimed"
+                class="btn btn-danger"
+                style="font-size:.95rem;padding:.8rem 2rem"
+                onclick="return confirm('عدم مراجعه مشتری ثبت شود؟')">
+            <i class="fas fa-user-times"></i>
+            ثبت عدم مراجعه مشتری
+        </button>
+    </form>
+
+{% elif prescription.status == 'delivered' %}
     <i class="fas fa-check-double" style="font-size:3rem;color:#3b82f6;display:block;margin-bottom:.8rem"></i>
-    <strong style="font-size:1.1rem;color:#1e40af">داروها با موفقیت تحویل داده شده‌اند ✅</strong>
+    <strong style="font-size:1.1rem;color:#1e40af">داروها با موفقیت تحویل داده شده‌اند</strong>
     {% if prescription.admin_notes %}
-    <div class="notes-box" style="margin-top:1rem;text-align:right">{{ prescription.admin_notes }}</div>
+        <div class="notes-box" style="margin-top:1rem;text-align:right">{{ prescription.admin_notes }}</div>
     {% endif %}
+
+{% elif prescription.status == 'unclaimed' %}
+    <i class="fas fa-user-times" style="font-size:3rem;color:#dc2626;display:block;margin-bottom:.8rem"></i>
+    <strong style="font-size:1.1rem;color:#991b1b">عدم مراجعه مشتری ثبت شده است</strong>
+    {% if prescription.admin_notes %}
+        <div class="notes-box" style="margin-top:1rem;text-align:right">{{ prescription.admin_notes }}</div>
     {% endif %}
+
+{% endif %}
   </div>
 </div>
 {% endif %}
