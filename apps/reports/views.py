@@ -114,7 +114,7 @@ def sales_pdf(request):
         })
 
     now = jdatetime.datetime.fromgregorian(datetime=timezone.localtime()).strftime("%Y/%m/%d %H:%M")
-    html = render_to_string("reports/admin/Sales_pdf.html", {
+    html = render_to_string("reports/admin/sales_pdf.html", {
         "rows": rows,
         "summary": summary(qs),
         "months": jalali_monthly(qs),

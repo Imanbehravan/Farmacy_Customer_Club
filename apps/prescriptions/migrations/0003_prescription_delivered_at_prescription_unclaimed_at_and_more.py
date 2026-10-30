@@ -23,6 +23,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='prescription',
             name='status',
-            field=models.CharField(choices=[('pending', 'در حال بررسی'), ('items_entered', 'اقلام وارد شده'), ('ready', 'آماده تحویل'), ('partial', 'موجودی ناقص'), ('delivered', 'تحویل داده شده'), ('unclaimed ', 'تحویل داده نشده')], default='pending', max_length=20, verbose_name='وضعیت'),
+            field=models.CharField(choices=[('pending', 'در حال بررسی'), ('items_entered', 'اقلام وارد شده'),
+                                            ('ready', 'آماده تحویل'), ('partial', 'موجودی ناقص'), ('delivered', 'تحویل داده شده'),
+                                            ('unclaimed ', 'تحویل داده نشده')], default='pending', max_length=20, verbose_name='وضعیت'),
         ),
     ]
