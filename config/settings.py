@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django_filters',
     "apps.reports",
     "jalali_date",
+    'apps.customer_ranking'
 ]
 
 MIDDLEWARE = [
