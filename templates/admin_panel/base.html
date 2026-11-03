@@ -31,7 +31,11 @@
         <i class="fas fa-tachometer-alt"></i>
         <span>داشبورد</span>
       </a>
-
+      <a href="{% url 'reports:sales_report' %}"
+        class="nav-item {% if request.resolver_match.app_name == 'reports' %}active{% endif %}">
+        <i class="fas fa-chart-line"></i>
+        <span>گزارش مالی</span>
+      </a>
       <a href="{% url 'admin_prescriptions' %}"
          class="nav-item {% if 'prescription' in request.resolver_match.url_name %}active{% endif %}">
         <i class="fas fa-file-prescription"></i>

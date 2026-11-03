@@ -1,5 +1,5 @@
 services:
-  db:
+  db: 
     image: postgres:15-alpine
     container_name: pharmacy_db
     restart: always
