@@ -2,7 +2,7 @@
 # تفاوت‌ها با نسخه‌ی توسعه:
 #   * به‌جای build روی سرور، ایمیج آماده‌ی ساخته‌شده در GitHub Actions استفاده می‌شود
 #   * سورس‌کد bind-mount نمی‌شود (ایمیج خودش کد را دارد)
-#   * makemigrations اجرا نمی‌شود؛ فقط migrate (مایگریشن‌ها داخل مخزن commit هستند)
+#   * مایگریشن‌ها داخل گیت نیستند: روی سرور در ./migrations نگهداری می‌شوند و کانتینر خودش makemigrations + migrate اجرا می‌کند
 #   * پورت 8000 بیرون باز نمی‌شود؛ فقط nginx روی 80 و 443 در دسترس است
 #   * ایمیج‌های پایه از میرور public.ecr.aws هستند (مثل سرور فعلی)
 #   * nginx.conf (با تنظیمات SSL) روی خود سرور نگهداری می‌شود و توسط CI عوض نمی‌شود
@@ -44,12 +44,19 @@ services:
     container_name: pharmacy_web
     restart: always
     command: >
-      sh -c "python manage.py migrate --noinput &&
+      sh -c "python manage.py makemigrations --noinput &&
+             python manage.py migrate --noinput &&
              python manage.py collectstatic --noinput &&
              daphne -b 0.0.0.0 -p 8000 config.asgi:application"
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+      # مایگریشن‌ها داخل گیت نیستند و روی سرور نگهداری می‌شوند
+      - ./migrations/accounts:/app/apps/accounts/migrations
+      - ./migrations/chat:/app/apps/chat/migrations
+      - ./migrations/customer_club:/app/apps/customer_club/migrations
+      - ./migrations/notifications:/app/apps/notifications/migrations
+      - ./migrations/prescriptions:/app/apps/prescriptions/migrations
     env_file:
       - .env
     expose:
