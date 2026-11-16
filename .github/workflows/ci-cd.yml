@@ -126,8 +126,6 @@ jobs:
           scp -i ~/.ssh/id_deploy -P "$SSH_PORT" \
             docker-compose.prod.yml "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/incoming/docker-compose.prod.yml"
           scp -i ~/.ssh/id_deploy -P "$SSH_PORT" \
-            nginx/nginx.conf "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/incoming/nginx.conf"
-          scp -i ~/.ssh/id_deploy -P "$SSH_PORT" \
             deploy/deploy.sh "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/incoming/deploy.sh"
 
       - name: Deploy
