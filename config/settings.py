@@ -163,3 +163,5 @@ LOGGING = {
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
     'loggers': {'apps': {'handlers': ['console'], 'level': 'INFO'}},
 }
+CSRF_COOKIE_SECURE = config('SECURE_COOKIES', default=False, cast=bool)
+SESSION_COOKIE_SECURE = config('SECURE_COOKIES', default=False, cast=bool)
