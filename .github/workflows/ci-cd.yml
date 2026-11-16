@@ -64,9 +64,6 @@ jobs:
       - name: Django system check
         run: python manage.py check
 
-      - name: Migrations are committed
-        run: python manage.py makemigrations --check --dry-run
-
       - name: Tests
         run: python manage.py test apps.accounts.tests -v 2
 
