@@ -5,7 +5,6 @@
 # پیش‌نیاز: داخل $DEPLOY_PATH این فایل‌ها آپلود شده‌اند:
 #   incoming/image.tar.gz   ایمیج Docker (pharmacy-web:<tag>)
 #   incoming/docker-compose.prod.yml
-#   incoming/nginx.conf
 # و فایل .env (ساخته‌شده توسط setup-server.sh) کنار آن‌هاست.
 set -euo pipefail
 
@@ -39,7 +38,8 @@ echo "▶ compose project: $COMPOSE_PROJECT_NAME"
 # ---- فایل‌های جدید ----
 mkdir -p nginx
 cp incoming/docker-compose.prod.yml docker-compose.yml
-cp incoming/nginx.conf nginx/nginx.conf
+# nginx/nginx.conf عمدا کپی نمی‌شود: تنظیمات SSL روی خود سرور نگهداری می‌شود
+[ -f nginx/nginx.conf ] || { echo "❌ فایل $DEPLOY_PATH/nginx/nginx.conf وجود ندارد"; exit 1; }
 
 # ---- لود ایمیج ----
 echo "▶ loading image pharmacy-web:$TAG"
@@ -62,7 +62,10 @@ if [ -z "$HOST_HEADER" ] || [ "$HOST_HEADER" = "*" ]; then HOST_HEADER="localhos
 echo "▶ health check (Host: $HOST_HEADER)"
 ok=0
 for i in $(seq 1 40); do
-  code="$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $HOST_HEADER" http://127.0.0.1/login/ || true)"
+  code="$(curl -sk -o /dev/null -w '%{http_code}' -H "Host: $HOST_HEADER" https://127.0.0.1/login/ || true)"
+  if [ "$code" != "200" ]; then
+    code="$(curl -s -o /dev/null -w '%{http_code}' -H "Host: $HOST_HEADER" http://127.0.0.1/login/ || true)"
+  fi
   if [ "$code" = "200" ]; then ok=1; break; fi
   sleep 3
 done
