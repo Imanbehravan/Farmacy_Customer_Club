@@ -134,3 +134,35 @@ JAZZMIN_SETTINGS = {
     },
     "custom_css": "css/admin.css",
 }
+
+# ---------------------------------------------------------------------------
+# پیامک کد تایید (کاوه‌نگار)
+# ---------------------------------------------------------------------------
+KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
+KAVENEGAR_TEMPLATE = config('KAVENEGAR_TEMPLATE', default='verify')
+KAVENEGAR_TIMEOUT = config('KAVENEGAR_TIMEOUT', default=10, cast=int)
+
+# نمایش کد روی صفحه فقط وقتی مجاز است که کلید پیامک تنظیم نشده باشد (حالت موقت/توسعه).
+# به‌محض تنظیم KAVENEGAR_API_KEY به‌صورت خودکار خاموش می‌شود.
+OTP_SHOW_ON_SCREEN = config('OTP_SHOW_ON_SCREEN', default=not bool(KAVENEGAR_API_KEY), cast=bool)
+OTP_COOLDOWN_SECONDS = config('OTP_COOLDOWN_SECONDS', default=120, cast=int)
+OTP_MAX_PER_HOUR = config('OTP_MAX_PER_HOUR', default=5, cast=int)
+OTP_MAX_PER_IP_HOUR = config('OTP_MAX_PER_IP_HOUR', default=30, cast=int)
+OTP_MAX_ATTEMPTS = config('OTP_MAX_ATTEMPTS', default=5, cast=int)
+
+# ---------------------------------------------------------------------------
+# پشت nginx / HTTPS
+# ---------------------------------------------------------------------------
+# مثال: CSRF_TRUSTED_ORIGINS=https://example.ir,https://www.example.ir
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if o.strip()]
+if config('USE_X_FORWARDED_PROTO', default=False, cast=bool):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {'apps': {'handlers': ['console'], 'level': 'INFO'}},
+}
+CSRF_COOKIE_SECURE = config('SECURE_COOKIES', default=False, cast=bool)
+SESSION_COOKIE_SECURE = config('SECURE_COOKIES', default=False, cast=bool)

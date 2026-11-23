@@ -1,5 +1,20 @@
 {% extends 'base.html' %}
 {% block title %}تأیید کد | باشگاه مشتریان داروخانه{% endblock %}
+{% block extra_css %}
+<style>
+    .otp-display {
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 10px;
+        background: #ecfdf5; border: 1px dashed #10b981; color: #065f46;
+        border-radius: 12px; padding: 12px 16px; margin-bottom: 18px;
+    }
+    .otp-display-code { font-size: 1.6rem; letter-spacing: 6px; font-family: monospace; }
+    .otp-display-fill {
+        background: #10b981; color: #fff; border: 0; border-radius: 8px;
+        padding: 6px 12px; cursor: pointer; font-family: inherit;
+    }
+</style>
+{% endblock %}
 {% block content %}
 <div class="auth-wrapper">
     <div class="auth-card">
@@ -11,10 +26,14 @@
             <p>کد ۶ رقمی ارسال شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید</p>
         </div>
 
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
+        {% if otp_code %}
+        <div class="otp-display">
+            <span class="otp-display-label"><i class="fas fa-key"></i> کد تأیید شما:</span>
+            <strong class="otp-display-code" dir="ltr">{{ otp_code }}</strong>
+            <button type="button" class="otp-display-fill" id="fillOtp" data-code="{{ otp_code }}">
+                <i class="fas fa-magic"></i> درج خودکار
+            </button>
+        </div>
         {% endif %}
 
         <form method="post" action="{% url 'verify_otp' %}">
@@ -53,13 +72,26 @@
 
         <div class="auth-footer">
             <i class="fas fa-info-circle"></i>
-            کد تأیید در کنسول سرور قابل مشاهده است (حالت آزمایشی)
+            {% if otp_code %}
+            ارسال پیامک به‌زودی فعال می‌شود؛ تا آن زمان کد روی همین صفحه نمایش داده می‌شود.
+            {% else %}
+            کد تأیید به شماره موبایل شما پیامک شد.
+            {% endif %}
         </div>
     </div>
 </div>
 
+{% endblock %}
+
 {% block extra_js %}
 <script>
+    const fillBtn = document.getElementById('fillOtp');
+    if (fillBtn) {
+        fillBtn.addEventListener('click', () => {
+            document.getElementById('code').value = fillBtn.dataset.code;
+        });
+    }
+
     let seconds = 120;
     const timer = document.getElementById('timer');
     const timerText = document.getElementById('timerText');
@@ -77,5 +109,4 @@
         }
     }, 1000);
 </script>
-{% endblock %}
 {% endblock %}
