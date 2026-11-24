@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -979,6 +978,7 @@
             justify-content: space-between;
             align-items: center;
             gap: 25px;
+            flex-wrap: wrap;
         }
 
         .footer-links {
@@ -999,6 +999,16 @@
         .footer-copy {
             font-size: 10px;
             color: var(--muted);
+        }
+        .footer-trust {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .footer-trust img {
+            width: 80px;
+            height: auto;
+            display: block;
         }
         /* SCROLL ANIMATION */
         .reveal {
@@ -1694,6 +1704,11 @@
             <a href="#features">مزایای عضویت</a>
             <a href="#steps">راهنمای عضویت</a>
             <a href="{% url 'login' %}">ورود</a>
+        </div>
+        <div class="footer-trust">
+            <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=8795900&Code=1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo'>
+                <img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=8795900&Code=1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo' alt='نماد اعتماد الکترونیکی' style='cursor:pointer' code='1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo'>
+            </a>
         </div>
         <span class="footer-copy">
             © تمامی حقوق محفوظ است.
