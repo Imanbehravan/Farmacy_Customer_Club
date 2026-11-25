@@ -257,3 +257,22 @@ body:has(.ac-page) { background: var(--ac-paper); }
   .ac-ring .bar, .ac-btn, .ac-input, .ac-otp-box { transition: none; }
   .ac-otp.is-error .ac-otp-box { animation: none; }
 }
+
+/* حالت آزمایشی: نمایش کد روی صفحه (فقط وقتی پیامک فعال نیست) */
+.ac-devcode {
+  margin-top: 22px;
+  padding: 12px 14px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px;
+  background: #fbf1d8;
+  border: 1px dashed rgba(146, 100, 14, .5);
+  border-radius: 14px;
+  font-size: 12px;
+  color: #6d4a07;
+}
+.ac-devcode strong { font-size: 20px; letter-spacing: .3em; font-family: monospace; }
+.ac-devcode button {
+  padding: 6px 12px;
+  font: 600 12px/1 'Vazirmatn', Tahoma, sans-serif;
+  color: #fff; background: #6d4a07;
+  border: 0; border-radius: 100px; cursor: pointer;
+}
