@@ -171,3 +171,9 @@ LOGGING = {
         'apps.accounts': {'handlers': ['console'], 'level': 'INFO'},
     },
 }
+# پشت nginx با HTTPS / دامنه
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if o.strip()
+]
+if config('USE_X_FORWARDED_PROTO', default=False, cast=bool):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
