@@ -1,47 +1,80 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}ورود | باشگاه مشتریان داروخانه{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+
+{% block messages %}{% endblock %}
+
 {% block content %}
-<div class="auth-wrapper">
-    <div class="auth-card">
-        <div class="auth-logo">
-            <div class="logo-circle">
-                <i class="fas fa-pills"></i>
-            </div>
-            <h1>باشگاه مشتریان</h1>
-            <p>داروخانه</p>
+<div class="ac-page">
+    <div class="ac-card">
+        <div class="ac-brand" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3V21M3 12H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
         </div>
 
-        <form method="post" action="{% url 'login' %}">
+        <h1 class="ac-title">ورود یا عضویت</h1>
+        <p class="ac-sub">شماره موبایل خود را وارد کنید تا کد تأیید برایتان پیامک شود.</p>
+
+        {% if messages %}
+        <div class="ac-alerts" role="alert">
+            {% for message in messages %}
+            <div class="ac-alert ac-alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form class="ac-form" method="post" action="{% url 'login' %}" id="loginForm">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="phone_number">
-                    <i class="fas fa-mobile-alt"></i>
-                    شماره موبایل
-                </label>
-                <input
-                    type="tel"
-                    id="phone_number"
-                    name="phone_number"
-                    placeholder="09123456789"
-                    maxlength="11"
-                    pattern="09[0-9]{9}"
-                    required
-                    autofocus
-                    class="form-input"
-                    dir="ltr"
-                >
-                <span class="form-hint">مثال: 09123456789</span>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">
-                <i class="fas fa-paper-plane"></i>
-                دریافت کد تایید
-            </button>
+            <label class="ac-label" for="phone_number">شماره موبایل</label>
+            <input
+                class="ac-input"
+                type="tel"
+                id="phone_number"
+                name="phone_number"
+                value="{{ phone_value|default:'' }}"
+                placeholder="09123456789"
+                maxlength="14"
+                inputmode="tel"
+                autocomplete="tel"
+                required
+                autofocus
+            >
+            <span class="ac-hint">کد فقط به همین شماره ارسال می‌شود و برای ورود به باشگاه استفاده می‌شود.</span>
+
+            <button type="submit" class="ac-btn" id="loginBtn">دریافت کد تأیید</button>
         </form>
 
-        <div class="auth-footer">
-            <i class="fas fa-shield-alt"></i>
-            ورود شما کاملاً امن و رمزگذاری شده است
+        <div class="ac-foot">
+            <a class="ac-link" href="{% url 'landing' %}">بازگشت به صفحه اصلی</a>
+            <span class="ac-seal">{% include 'partials/enamad.html' %}</span>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const FA = '۰۱۲۳۴۵۶۷۸۹', AR = '٠١٢٣٤٥٦٧٨٩';
+    const toLatin = s => s
+        .replace(/[۰-۹]/g, d => FA.indexOf(d))
+        .replace(/[٠-٩]/g, d => AR.indexOf(d));
+
+    const input = document.getElementById('phone_number');
+    input.addEventListener('input', () => {
+        input.value = toLatin(input.value).replace(/[^\d+\s]/g, '');
+    });
+
+    // جلوگیری از ارسال دوباره‌ی فرم (هر پیامک هزینه دارد)
+    const form = document.getElementById('loginForm');
+    const btn = document.getElementById('loginBtn');
+    form.addEventListener('submit', () => {
+        btn.disabled = true;
+        btn.textContent = 'در حال ارسال پیامک…';
+    });
+})();
+</script>
 {% endblock %}

@@ -7,8 +7,8 @@ from . import views
 urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     path('verify/', views.VerifyOTPView.as_view(), name='verify_otp'),
+    path('verify/resend/', views.ResendOTPView.as_view(), name='resend_otp'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     path('panel/reports/', include('apps.reports.urls')),
-    path('ranking/', include('apps.customer_ranking.urls')),
 ]

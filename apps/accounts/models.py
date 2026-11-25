@@ -57,7 +57,6 @@ class OTPCode(models.Model):
     code = models.CharField(max_length=6, verbose_name='کد تایید')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     is_used = models.BooleanField(default=False, verbose_name='استفاده شده')
-    attempts = models.PositiveSmallIntegerField(default=0, verbose_name='تعداد تلاش ناموفق')
 
     class Meta:
         verbose_name = 'کد تایید'

@@ -1,36 +1,111 @@
-import hmac
 import logging
+import re
 from datetime import timedelta
 
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import login, logout
-from django.core.cache import cache
 from django.shortcuts import render, redirect
-from django.utils import timezone
+from django.contrib.auth import login, logout
+from django.contrib import messages
 from django.views import View
-
-from . import sms
+from django.conf import settings
+from django.core.cache import cache
+from django.utils import timezone
 from .models import User, OTPCode
+from .sms import send_otp, SMSError
 
 logger = logging.getLogger(__name__)
 
-# تبدیل ارقام فارسی/عربی به انگلیسی
+# ---------------------------------------------------------------- کمکی‌ها
 _DIGITS = str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')
 
 
-def _normalize_digits(value):
+def normalize_digits(value):
+    """ارقام فارسی/عربی را به انگلیسی تبدیل می‌کند."""
     return (value or '').translate(_DIGITS).strip()
 
 
-def _client_ip(request):
-    # nginx آی‌پی واقعی کلاینت را به‌عنوان آخرین مقدار X-Forwarded-For اضافه می‌کند
-    xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    if xff:
-        return xff.split(',')[-1].strip()
-    return request.META.get('REMOTE_ADDR', '')
+def normalize_phone(raw):
+    """09123456789 را از فرمت‌هایی مثل +98912…، 0098912… و 912… می‌سازد."""
+    v = re.sub(r'[\s\-()]', '', normalize_digits(raw))
+    if v.startswith('+98'):
+        v = '0' + v[3:]
+    elif v.startswith('0098'):
+        v = '0' + v[4:]
+    elif v.startswith('98') and len(v) == 12:
+        v = '0' + v[2:]
+    elif v.startswith('9') and len(v) == 10:
+        v = '0' + v
+    return v
 
 
+def is_valid_phone(value):
+    return re.fullmatch(r'09\d{9}', value) is not None
+
+
+def mask_phone(phone):
+    return f'{phone[:4]}***{phone[-4:]}' if phone and len(phone) == 11 else phone
+
+
+def client_ip(request):
+    # پشت nginx: آخرین مقدار X-Forwarded-For همانی است که nginx اضافه کرده
+    forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+    if forwarded:
+        return forwarded.split(',')[-1].strip()
+    return request.META.get('REMOTE_ADDR', 'unknown')
+
+
+def _count_hit(key, ttl):
+    cache.add(key, 0, ttl)
+    try:
+        return cache.incr(key)
+    except ValueError:
+        cache.set(key, 1, ttl)
+        return 1
+
+
+def resend_wait_seconds(phone):
+    """چند ثانیه تا مجاز شدن ارسال مجدد کد باقی مانده است."""
+    last = OTPCode.objects.filter(phone_number=phone).order_by('-created_at').first()
+    if not last:
+        return 0
+    passed = int((timezone.now() - last.created_at).total_seconds())
+    return max(0, settings.OTP_RESEND_SECONDS - passed)
+
+
+SENT, COOLDOWN, LIMITED, FAILED = 'sent', 'cooldown', 'limited', 'failed'
+
+
+def issue_otp(request, phone):
+    """
+    یک کد جدید می‌سازد و پیامک می‌کند.
+    خروجی: (وضعیت، پیام برای کاربر)
+    """
+    wait = resend_wait_seconds(phone)
+    if wait > 0:
+        return COOLDOWN, f'کد قبلاً برایتان ارسال شده است. {wait} ثانیه‌ی دیگر می‌توانید کد جدید بگیرید.'
+
+    too_many = 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.'
+    hour_ago = timezone.now() - timedelta(hours=1)
+    if OTPCode.objects.filter(phone_number=phone, created_at__gte=hour_ago).count() >= settings.OTP_MAX_SENDS_PER_HOUR:
+        return LIMITED, too_many
+    if _count_hit(f'otp:ip:{client_ip(request)}', 3600) > settings.OTP_MAX_SENDS_PER_IP_HOUR:
+        return LIMITED, too_many
+
+    OTPCode.objects.filter(phone_number=phone, is_used=False).update(is_used=True)
+    code = OTPCode.generate_code()
+    otp = OTPCode.objects.create(phone_number=phone, code=code)
+    cache.delete(f'otp:fail:{phone}')
+
+    try:
+        send_otp(phone, code)
+    except SMSError as exc:
+        logger.error('ارسال پیامک به %s ناموفق بود: %s', phone, exc)
+        otp.delete()  # ارسال ناموفق نباید در محدودیت‌ها حساب شود
+        return FAILED, 'ارسال پیامک با مشکل مواجه شد. چند لحظه بعد دوباره تلاش کنید.'
+
+    return SENT, f'کد تایید به شماره {mask_phone(phone)} پیامک شد.'
+
+
+# -------------------------------------------------------------------- ویوها
 class LoginView(View):
     template_name = 'accounts/login.html'
 
@@ -40,78 +115,32 @@ class LoginView(View):
         return render(request, self.template_name)
 
     def post(self, request):
-        phone_number = _normalize_digits(request.POST.get('phone_number'))
-        if len(phone_number) != 11 or not phone_number.isdigit() or not phone_number.startswith('09'):
+        phone_number = normalize_phone(request.POST.get('phone_number', ''))
+        if not is_valid_phone(phone_number):
             messages.error(request, 'شماره موبایل معتبر نیست. مثال: 09123456789')
             return render(request, self.template_name)
 
-        now = timezone.now()
-        cooldown = settings.OTP_COOLDOWN_SECONDS
-        recent = OTPCode.objects.filter(phone_number=phone_number)
+        status, message = issue_otp(request, phone_number)
 
-        # ۱) فاصله‌ی حداقلی بین دو درخواست: اگر هنوز کد قبلی معتبر است به صفحه‌ی تایید برو
-        last = recent.first()
-        if last and (now - last.created_at) < timedelta(seconds=cooldown) and last.is_valid():
-            wait = cooldown - int((now - last.created_at).total_seconds())
+        if status in (SENT, COOLDOWN):
             request.session['otp_phone'] = phone_number
-            messages.info(request, f'کد تایید اخیراً ارسال شده است. تا {wait} ثانیه‌ی دیگر می‌توانید دوباره درخواست دهید.')
+            (messages.success if status == SENT else messages.info)(request, message)
             return redirect('verify_otp')
 
-        # ۲) سقف تعداد درخواست در ساعت برای هر شماره
-        sent_last_hour = recent.filter(created_at__gte=now - timedelta(hours=1)).count()
-        if sent_last_hour >= settings.OTP_MAX_PER_HOUR:
-            messages.error(request, 'تعداد درخواست‌های شما زیاد بوده است. لطفاً بعداً دوباره تلاش کنید.')
-            return render(request, self.template_name)
-
-        # ۳) سقف تعداد درخواست در ساعت برای هر آی‌پی (جلوگیری از سوءاستفاده و هزینه‌ی پیامک)
-        ip_key = f'otp_ip_{_client_ip(request)}'
-        cache.add(ip_key, 0, timeout=3600)
-        try:
-            ip_count = cache.incr(ip_key)
-        except ValueError:
-            ip_count = 1
-        if ip_count > settings.OTP_MAX_PER_IP_HOUR:
-            messages.error(request, 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً بعداً دوباره تلاش کنید.')
-            return render(request, self.template_name)
-
-        # ساخت کد جدید و باطل‌کردن کدهای قبلی
-        OTPCode.objects.filter(phone_number=phone_number, is_used=False).update(is_used=True)
-        code = OTPCode.generate_code()
-        otp = OTPCode.objects.create(phone_number=phone_number, code=code)
-
-        request.session.pop('otp_display_code', None)
-
-        if sms.is_configured():
-            try:
-                sms.send_otp(phone_number, code)
-            except sms.SMSError:
-                logger.exception('ارسال پیامک کد تایید ناموفق بود')
-                otp.delete()
-                messages.error(request, 'ارسال پیامک با مشکل مواجه شد. لطفاً چند دقیقه‌ی دیگر دوباره تلاش کنید.')
-                return render(request, self.template_name)
-            messages.success(request, f'کد تایید به شماره {phone_number} ارسال شد.')
-        elif settings.OTP_SHOW_ON_SCREEN:
-            # حالت موقت/توسعه: فقط وقتی کلید پیامک تنظیم نشده است
-            request.session['otp_display_code'] = code
-            messages.success(request, 'کد تایید ساخته شد و در صفحه‌ی بعد نمایش داده می‌شود.')
-        else:
-            otp.delete()
-            logger.error('سرویس پیامک پیکربندی نشده است (KAVENEGAR_API_KEY)')
-            messages.error(request, 'سرویس ارسال پیامک در دسترس نیست.')
-            return render(request, self.template_name)
-
-        request.session['otp_phone'] = phone_number
-        return redirect('verify_otp')
+        messages.error(request, message)
+        return render(request, self.template_name, {'phone_value': phone_number})
 
 
 class VerifyOTPView(View):
     template_name = 'accounts/verify_otp.html'
 
     def _context(self, request):
-        show = settings.OTP_SHOW_ON_SCREEN and not sms.is_configured()
+        phone = request.session.get('otp_phone')
         return {
-            'phone': request.session.get('otp_phone'),
-            'otp_code': request.session.get('otp_display_code') if show else None,
+            'phone': phone,
+            'phone_masked': mask_phone(phone),
+            'resend_in': resend_wait_seconds(phone) if phone else 0,
+            'resend_total': settings.OTP_RESEND_SECONDS,
         }
 
     def get(self, request):
@@ -123,51 +152,70 @@ class VerifyOTPView(View):
 
     def post(self, request):
         phone_number = request.session.get('otp_phone')
-        code = _normalize_digits(request.POST.get('code'))
+        code = normalize_digits(request.POST.get('code', ''))
 
         if not phone_number:
             return redirect('login')
 
-        otp = OTPCode.objects.filter(phone_number=phone_number, is_used=False).order_by('-created_at').first()
-        if otp is None:
-            messages.error(request, 'کد تایید معتبر نیست. دوباره درخواست دهید.')
-            return redirect('login')
+        fail_key = f'otp:fail:{phone_number}'
 
-        if not otp.is_valid():
+        try:
+            otp = OTPCode.objects.filter(
+                phone_number=phone_number,
+                code=code,
+                is_used=False
+            ).latest('created_at')
+
+            if not otp.is_valid():
+                messages.error(request, 'کد تایید منقضی شده است. کد جدید دریافت کنید.')
+                return render(request, self.template_name, self._context(request))
+
             otp.is_used = True
-            otp.save(update_fields=['is_used'])
-            messages.error(request, 'کد تایید منقضی شده. دوباره تلاش کنید.')
-            return redirect('login')
+            otp.save()
+            cache.delete(fail_key)
 
-        if not hmac.compare_digest(otp.code, code):
-            otp.attempts += 1
-            if otp.attempts >= settings.OTP_MAX_ATTEMPTS:
-                otp.is_used = True
-                otp.save(update_fields=['attempts', 'is_used'])
-                messages.error(request, 'تعداد تلاش‌های ناموفق بیش از حد مجاز بود. دوباره کد بگیرید.')
-                return redirect('login')
-            otp.save(update_fields=['attempts'])
-            messages.error(request, 'کد تایید اشتباه است.')
+            user, created = User.objects.get_or_create(phone_number=phone_number)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
+            request.session.pop('otp_phone', None)
+
+            if created:
+                messages.success(request, 'ثبت نام شما با موفقیت انجام شد!')
+            else:
+                messages.success(request, 'ورود موفقیت آمیز بود!')
+
+            return redirect('dashboard')
+
+        except OTPCode.DoesNotExist:
+            fails = _count_hit(fail_key, 600)
+            if fails >= settings.OTP_MAX_WRONG_ATTEMPTS:
+                # جلوگیری از حدس زدن کد: کد فعلی باطل می‌شود
+                OTPCode.objects.filter(phone_number=phone_number, is_used=False).update(is_used=True)
+                cache.delete(fail_key)
+                messages.error(request, 'چند بار کد اشتباه وارد شد. برای امنیت شما کد باطل شد؛ کد جدید دریافت کنید.')
+            else:
+                messages.error(request, 'کد تایید اشتباه است.')
             return render(request, self.template_name, self._context(request))
 
-        otp.is_used = True
-        otp.save(update_fields=['is_used'])
 
-        user, created = User.objects.get_or_create(phone_number=phone_number)
-        if not user.is_active:
-            messages.error(request, 'حساب کاربری شما غیرفعال است.')
+class ResendOTPView(View):
+    """ارسال مجدد کد برای شماره‌ای که در session است."""
+
+    def post(self, request):
+        phone_number = request.session.get('otp_phone')
+        if not phone_number:
             return redirect('login')
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-
-        request.session.pop('otp_phone', None)
-        request.session.pop('otp_display_code', None)
-
-        if created:
-            messages.success(request, 'ثبت نام شما با موفقیت انجام شد!')
+        status, message = issue_otp(request, phone_number)
+        if status == SENT:
+            messages.success(request, message)
+        elif status == COOLDOWN:
+            messages.info(request, message)
         else:
-            messages.success(request, 'ورود موفقیت آمیز بود!')
+            messages.error(request, message)
+        return redirect('verify_otp')
 
-        return redirect('dashboard')
+    def get(self, request):
+        return redirect('verify_otp')
 
 
 class LogoutView(View):
@@ -226,4 +274,4 @@ class DashboardView(View):
 
 
 # Import needed for aggregate
-from django.db import models
+from django.db import models
