@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
@@ -1706,9 +1707,7 @@
             <a href="{% url 'login' %}">ورود</a>
         </div>
         <div class="footer-trust">
-            <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=8795900&Code=1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo'>
-                <img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=8795900&Code=1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo' alt='نماد اعتماد الکترونیکی' style='cursor:pointer' code='1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo'>
-            </a>
+            {% include 'partials/enamad.html' %}
         </div>
         <span class="footer-copy">
             © تمامی حقوق محفوظ است.

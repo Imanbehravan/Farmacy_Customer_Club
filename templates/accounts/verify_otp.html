@@ -1,112 +1,205 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}تأیید کد | باشگاه مشتریان داروخانه{% endblock %}
-{% block extra_css %}
-<style>
-    .otp-display {
-        display: flex; align-items: center; justify-content: space-between;
-        flex-wrap: wrap; gap: 10px;
-        background: #ecfdf5; border: 1px dashed #10b981; color: #065f46;
-        border-radius: 12px; padding: 12px 16px; margin-bottom: 18px;
-    }
-    .otp-display-code { font-size: 1.6rem; letter-spacing: 6px; font-family: monospace; }
-    .otp-display-fill {
-        background: #10b981; color: #fff; border: 0; border-radius: 8px;
-        padding: 6px 12px; cursor: pointer; font-family: inherit;
-    }
-</style>
-{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/auth.css' %}">{% endblock %}
+
+{% block messages %}{% endblock %}
+
 {% block content %}
-<div class="auth-wrapper">
-    <div class="auth-card">
-        <div class="auth-logo">
-            <div class="logo-circle">
-                <i class="fas fa-sms"></i>
-            </div>
-            <h1>تأیید شماره موبایل</h1>
-            <p>کد ۶ رقمی ارسال شده به <strong dir="ltr">{{ phone }}</strong> را وارد کنید</p>
+<div class="ac-page">
+    <div class="ac-card">
+        <div class="ac-brand" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3V21M3 12H21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
         </div>
 
-        {% if otp_code %}
-        <div class="otp-display">
-            <span class="otp-display-label"><i class="fas fa-key"></i> کد تأیید شما:</span>
-            <strong class="otp-display-code" dir="ltr">{{ otp_code }}</strong>
-            <button type="button" class="otp-display-fill" id="fillOtp" data-code="{{ otp_code }}">
-                <i class="fas fa-magic"></i> درج خودکار
-            </button>
+        <h1 class="ac-title">کد تأیید را وارد کنید</h1>
+        <p class="ac-sub">
+            کد ۶ رقمی به شماره <strong><bdi>{{ phone_masked }}</bdi></strong> پیامک شد.
+            <a class="ac-link" href="{% url 'login' %}">تغییر شماره</a>
+        </p>
+
+        {% if messages %}
+        <div class="ac-alerts" role="alert">
+            {% for message in messages %}
+            <div class="ac-alert ac-alert-{{ message.tags }}">{{ message }}</div>
+            {% if message.tags == 'error' %}<span data-error-flag hidden></span>{% endif %}
+            {% endfor %}
         </div>
         {% endif %}
 
-        <form method="post" action="{% url 'verify_otp' %}">
+        <form class="ac-form" method="post" action="{% url 'verify_otp' %}" id="verifyForm">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="code">
-                    <i class="fas fa-key"></i>
-                    کد تأیید
-                </label>
+            <label class="ac-label" id="otpLabel">کد تأیید</label>
+            <input type="hidden" name="code" id="code">
+
+            <div class="ac-otp" id="otpGroup" role="group" aria-labelledby="otpLabel">
+                {% for i in "012345" %}
                 <input
+                    class="ac-otp-box"
                     type="text"
-                    id="code"
-                    name="code"
-                    placeholder="------"
-                    maxlength="6"
-                    pattern="[0-9]{6}"
-                    required
-                    autofocus
-                    class="form-input otp-input"
-                    dir="ltr"
                     inputmode="numeric"
+                    pattern="[0-9]*"
+                    autocomplete="{% if forloop.first %}one-time-code{% else %}off{% endif %}"
+                    aria-label="رقم {{ forloop.counter }}"
+                    {% if forloop.first %}autofocus{% endif %}
                 >
+                {% endfor %}
             </div>
-            <button type="submit" class="btn btn-primary btn-full">
-                <i class="fas fa-check-circle"></i>
-                تأیید و ورود
-            </button>
+            <span class="ac-hint">کد تا ۵ دقیقه معتبر است. بعد از وارد کردن رقم آخر، خودکار بررسی می‌شود.</span>
+
+            <button type="submit" class="ac-btn" id="verifyBtn">تأیید و ورود</button>
         </form>
 
-        <div class="resend-section">
-            <span id="timerText">ارسال مجدد کد پس از: <strong id="timer">02:00</strong></span>
-            <a href="{% url 'login' %}" class="resend-link" id="resendLink" style="display:none">
-                <i class="fas fa-redo"></i> ارسال مجدد
-            </a>
-        </div>
+        <form class="ac-resend" method="post" action="{% url 'resend_otp' %}" id="resendForm"
+              data-seconds="{{ resend_in }}" data-total="{{ resend_total }}">
+            {% csrf_token %}
+            <div class="ac-ring" id="timerBox" {% if resend_in <= 0 %}hidden{% endif %}>
+                <svg viewBox="0 0 52 52" aria-hidden="true">
+                    <circle class="track" cx="26" cy="26" r="22"/>
+                    <circle class="bar" id="ringBar" cx="26" cy="26" r="22"/>
+                </svg>
+                <span id="timerText"></span>
+            </div>
+            <span id="timerLabel" {% if resend_in <= 0 %}hidden{% endif %}>تا ارسال مجدد کد</span>
+            <button type="submit" class="ac-resend-btn" id="resendBtn" {% if resend_in > 0 %}hidden{% endif %}>ارسال مجدد کد</button>
+        </form>
 
-        <div class="auth-footer">
-            <i class="fas fa-info-circle"></i>
-            {% if otp_code %}
-            ارسال پیامک به‌زودی فعال می‌شود؛ تا آن زمان کد روی همین صفحه نمایش داده می‌شود.
-            {% else %}
-            کد تأیید به شماره موبایل شما پیامک شد.
-            {% endif %}
+        <div class="ac-foot">
+            <a class="ac-link" href="{% url 'landing' %}">بازگشت به صفحه اصلی</a>
+            <span class="ac-seal">{% include 'partials/enamad.html' %}</span>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    const fillBtn = document.getElementById('fillOtp');
-    if (fillBtn) {
-        fillBtn.addEventListener('click', () => {
-            document.getElementById('code').value = fillBtn.dataset.code;
-        });
+(function () {
+    const FA = '۰۱۲۳۴۵۶۷۸۹', AR = '٠١٢٣٤٥٦٧٨٩';
+    const toLatin = s => s
+        .replace(/[۰-۹]/g, d => FA.indexOf(d))
+        .replace(/[٠-٩]/g, d => AR.indexOf(d))
+        .replace(/\D/g, '');
+
+    const form = document.getElementById('verifyForm');
+    const group = document.getElementById('otpGroup');
+    const hidden = document.getElementById('code');
+    const btn = document.getElementById('verifyBtn');
+    const boxes = Array.from(group.querySelectorAll('.ac-otp-box'));
+    let submitting = false;
+
+    function sync() {
+        hidden.value = boxes.map(b => b.value).join('');
+        boxes.forEach(b => b.classList.toggle('is-filled', !!b.value));
+        group.classList.remove('is-error');
+        if (hidden.value.length === boxes.length) submit();
     }
 
-    let seconds = 120;
-    const timer = document.getElementById('timer');
-    const timerText = document.getElementById('timerText');
-    const resendLink = document.getElementById('resendLink');
+    function submit() {
+        if (submitting) return;
+        submitting = true;
+        btn.disabled = true;
+        btn.textContent = 'در حال بررسی…';
+        form.submit();
+    }
 
-    const interval = setInterval(() => {
-        seconds--;
-        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const s = String(seconds % 60).padStart(2, '0');
-        timer.textContent = `${m}:${s}`;
-        if (seconds <= 0) {
-            clearInterval(interval);
-            timerText.style.display = 'none';
-            resendLink.style.display = 'inline-flex';
+    function fill(start, digits) {
+        digits.split('').forEach((d, i) => {
+            if (boxes[start + i]) boxes[start + i].value = d;
+        });
+        const next = Math.min(start + digits.length, boxes.length - 1);
+        boxes[next].focus();
+        sync();
+    }
+
+    boxes.forEach((box, i) => {
+        box.addEventListener('focus', () => box.select());
+        // پوشش تایپ عادی، تکمیل خودکار iOS/Android و چندرقمی‌ها
+        box.addEventListener('input', () => {
+            const digits = toLatin(box.value);
+            box.value = '';
+            if (!digits) { sync(); return; }
+            fill(i, digits);
+        });
+        box.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !box.value && i > 0) {
+                boxes[i - 1].value = '';
+                boxes[i - 1].focus();
+                sync();
+                e.preventDefault();
+            } else if (e.key === 'ArrowLeft' && i > 0) {
+                boxes[i - 1].focus(); e.preventDefault();
+            } else if (e.key === 'ArrowRight' && i < boxes.length - 1) {
+                boxes[i + 1].focus(); e.preventDefault();
+            }
+        });
+        box.addEventListener('paste', e => {
+            e.preventDefault();
+            const digits = toLatin((e.clipboardData || window.clipboardData).getData('text'));
+            if (digits) fill(digits.length >= boxes.length ? 0 : i, digits.slice(0, boxes.length));
+        });
+    });
+
+    form.addEventListener('submit', e => {
+        if (hidden.value.length !== boxes.length) {
+            e.preventDefault();
+            const empty = boxes.find(b => !b.value);
+            if (empty) empty.focus();
         }
-    }, 1000);
+    });
+
+    // کد اشتباه: لرزش کوتاه و پاک کردن خانه‌ها
+    if (document.querySelector('[data-error-flag]')) {
+        group.classList.add('is-error');
+        boxes[0].focus();
+    }
+
+    // پر شدن خودکار از پیامک (Chrome اندروید؛ نیازمند «@دامنه #کد» در انتهای پیامک)
+    if ('OTPCredential' in window) {
+        const ac = new AbortController();
+        form.addEventListener('submit', () => ac.abort());
+        navigator.credentials.get({ otp: { transport: ['sms'] }, signal: ac.signal })
+            .then(o => { if (o && o.code) fill(0, toLatin(o.code).slice(0, boxes.length)); })
+            .catch(() => {});
+    }
+
+    // ---------- شمارنده‌ی ارسال مجدد ----------
+    const resend = document.getElementById('resendForm');
+    let left = parseInt(resend.dataset.seconds, 10) || 0;
+    const total = parseInt(resend.dataset.total, 10) || 120;
+    if (left > 0) {
+        const bar = document.getElementById('ringBar');
+        const text = document.getElementById('timerText');
+        const timerBox = document.getElementById('timerBox');
+        const label = document.getElementById('timerLabel');
+        const rBtn = document.getElementById('resendBtn');
+        const C = 2 * Math.PI * 22;
+        bar.style.strokeDasharray = C;
+        const fa2 = n => n.toLocaleString('fa-IR', { minimumIntegerDigits: 2, useGrouping: false });
+        const end = Date.now() + left * 1000;
+
+        const tick = () => {
+            left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+            text.textContent = fa2(Math.floor(left / 60)) + ':' + fa2(left % 60);
+            bar.style.strokeDashoffset = C * (1 - left / total);
+            if (left <= 0) {
+                clearInterval(iv);
+                timerBox.hidden = true;
+                label.hidden = true;
+                rBtn.hidden = false;
+            }
+        };
+        const iv = setInterval(tick, 1000);
+        tick();
+    }
+    resend.addEventListener('submit', () => {
+        const rBtn = document.getElementById('resendBtn');
+        rBtn.disabled = true;
+        rBtn.textContent = 'در حال ارسال…';
+    });
+})();
 </script>
 {% endblock %}

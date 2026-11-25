@@ -25,7 +25,6 @@ INSTALLED_APPS = [
     'django_filters',
     "apps.reports",
     "jalali_date",
-    'apps.customer_ranking'
 ]
 
 MIDDLEWARE = [
@@ -70,6 +69,15 @@ DATABASES = {
         'PASSWORD': config('POSTGRES_PASSWORD', default='pharmacy_pass_2024'),
         'HOST': config('DB_HOST', default='db'),
         'PORT': config('DB_PORT', default='5432'),
+    }
+}
+
+# کش (برای محدودیت تعداد درخواست کد تایید) — روی همان Redis پروژه
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://redis:6379/0'),
+        'KEY_PREFIX': 'pharmacy',
     }
 }
 
@@ -135,34 +143,32 @@ JAZZMIN_SETTINGS = {
     "custom_css": "css/admin.css",
 }
 
-# ---------------------------------------------------------------------------
-# پیامک کد تایید (کاوه‌نگار)
-# ---------------------------------------------------------------------------
-KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='')
-KAVENEGAR_TEMPLATE = config('KAVENEGAR_TEMPLATE', default='verify')
-KAVENEGAR_TIMEOUT = config('KAVENEGAR_TIMEOUT', default=10, cast=int)
+# ------------------------------------------------------------------
+# پیامک و کد تایید (OTP)
+# مقادیر از فایل .env خوانده می‌شود؛ توضیح هر کدام در .env.example
+# ------------------------------------------------------------------
+SMS_PROVIDER = config('SMS_PROVIDER', default='kavenegar').strip().lower()   # kavenegar | smsir
+SMS_API_KEY = (
+    config('SMS_API_KEY', default='')
+    or config('SMS_TOKEN', default='')
+    or config('KAVENEGAR_API_KEY', default='')
+    or config('SMSIR_API_KEY', default='')
+).strip()
+SMS_TEMPLATE = config('SMS_TEMPLATE', default='').strip()            # نام/شناسه‌ی قالب تایید در پنل پیامک
+SMS_TEMPLATE_PARAM = config('SMS_TEMPLATE_PARAM', default='Code')    # فقط برای sms.ir
+SMS_SENDER = config('SMS_SENDER', default='').strip()                # شماره خط (فقط اگر قالب ندارید)
+SMS_TIMEOUT = 10                                                     # ثانیه
 
-# نمایش کد روی صفحه فقط وقتی مجاز است که کلید پیامک تنظیم نشده باشد (حالت موقت/توسعه).
-# به‌محض تنظیم KAVENEGAR_API_KEY به‌صورت خودکار خاموش می‌شود.
-OTP_SHOW_ON_SCREEN = config('OTP_SHOW_ON_SCREEN', default=not bool(KAVENEGAR_API_KEY), cast=bool)
-OTP_COOLDOWN_SECONDS = config('OTP_COOLDOWN_SECONDS', default=120, cast=int)
-OTP_MAX_PER_HOUR = config('OTP_MAX_PER_HOUR', default=5, cast=int)
-OTP_MAX_PER_IP_HOUR = config('OTP_MAX_PER_IP_HOUR', default=30, cast=int)
-OTP_MAX_ATTEMPTS = config('OTP_MAX_ATTEMPTS', default=5, cast=int)
-
-# ---------------------------------------------------------------------------
-# پشت nginx / HTTPS
-# ---------------------------------------------------------------------------
-# مثال: CSRF_TRUSTED_ORIGINS=https://example.ir,https://www.example.ir
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if o.strip()]
-if config('USE_X_FORWARDED_PROTO', default=False, cast=bool):
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+OTP_RESEND_SECONDS = 120        # فاصله‌ی مجاز بین دو ارسال برای یک شماره
+OTP_MAX_SENDS_PER_HOUR = 5      # حداکثر ارسال در ساعت برای هر شماره
+OTP_MAX_SENDS_PER_IP_HOUR = 20  # حداکثر ارسال در ساعت برای هر IP
+OTP_MAX_WRONG_ATTEMPTS = 5      # بعد از این تعداد کد اشتباه، کد باطل می‌شود
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {'console': {'class': 'logging.StreamHandler'}},
-    'loggers': {'apps': {'handlers': ['console'], 'level': 'INFO'}},
+    'loggers': {
+        'apps.accounts': {'handlers': ['console'], 'level': 'INFO'},
+    },
 }
-CSRF_COOKIE_SECURE = config('SECURE_COOKIES', default=False, cast=bool)
-SESSION_COOKIE_SECURE = config('SECURE_COOKIES', default=False, cast=bool)
