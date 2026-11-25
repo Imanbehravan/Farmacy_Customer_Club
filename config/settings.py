@@ -25,7 +25,7 @@ INSTALLED_APPS = [
     'django_filters',
     "apps.reports",
     "jalali_date",
-    'apps.customer_ranking'
+    'apps.customer_ranking',
 ]
 
 MIDDLEWARE = [
@@ -145,25 +145,23 @@ JAZZMIN_SETTINGS = {
 }
 
 # ------------------------------------------------------------------
-# پیامک و کد تایید (OTP)
-# مقادیر از فایل .env خوانده می‌شود؛ توضیح هر کدام در .env.example
+# پیامک و کد تایید (OTP) — کاوه‌نگار
+# مقادیر از فایل .env خوانده می‌شود (راهنما: DEPLOY.md و .env.example)
 # ------------------------------------------------------------------
-SMS_PROVIDER = config('SMS_PROVIDER', default='kavenegar').strip().lower()   # kavenegar | smsir
-SMS_API_KEY = (
-    config('SMS_API_KEY', default='')
-    or config('SMS_TOKEN', default='')
-    or config('KAVENEGAR_API_KEY', default='')
-    or config('SMSIR_API_KEY', default='')
-).strip()
-SMS_TEMPLATE = config('SMS_TEMPLATE', default='').strip()            # نام/شناسه‌ی قالب تایید در پنل پیامک
-SMS_TEMPLATE_PARAM = config('SMS_TEMPLATE_PARAM', default='Code')    # فقط برای sms.ir
-SMS_SENDER = config('SMS_SENDER', default='').strip()                # شماره خط (فقط اگر قالب ندارید)
-SMS_TIMEOUT = 10                                                     # ثانیه
+KAVENEGAR_API_KEY = config('KAVENEGAR_API_KEY', default='').strip()
+KAVENEGAR_TEMPLATE = config('KAVENEGAR_TEMPLATE', default='verify').strip()
+KAVENEGAR_SENDER = config('KAVENEGAR_SENDER', default='').strip()   # فقط برای پیامک ساده (بدون قالب)
+SMS_TIMEOUT = 10  # ثانیه
 
-OTP_RESEND_SECONDS = 120        # فاصله‌ی مجاز بین دو ارسال برای یک شماره
-OTP_MAX_SENDS_PER_HOUR = 5      # حداکثر ارسال در ساعت برای هر شماره
-OTP_MAX_SENDS_PER_IP_HOUR = 20  # حداکثر ارسال در ساعت برای هر IP
-OTP_MAX_WRONG_ATTEMPTS = 5      # بعد از این تعداد کد اشتباه، کد باطل می‌شود
+# نمایش کد روی صفحه فقط حالت موقت تا وقتی کلید کاوه‌نگار ثبت نشده.
+# به‌محض ثبت KAVENEGAR_API_KEY خودکار خاموش می‌شود. روی سرور اصلی بهتر است
+# OTP_SHOW_ON_SCREEN=False را صریحاً در .env بگذارید.
+OTP_SHOW_ON_SCREEN = config('OTP_SHOW_ON_SCREEN', default=not KAVENEGAR_API_KEY, cast=bool)
+
+OTP_COOLDOWN_SECONDS = config('OTP_COOLDOWN_SECONDS', default=120, cast=int)    # فاصله‌ی دو ارسال برای یک شماره
+OTP_MAX_PER_HOUR = config('OTP_MAX_PER_HOUR', default=5, cast=int)              # حداکثر پیامک در ساعت برای هر شماره
+OTP_MAX_PER_IP_HOUR = config('OTP_MAX_PER_IP_HOUR', default=30, cast=int)       # حداکثر درخواست در ساعت برای هر IP
+OTP_MAX_ATTEMPTS = config('OTP_MAX_ATTEMPTS', default=5, cast=int)              # بعد از این تعداد کد اشتباه، کد باطل می‌شود
 
 LOGGING = {
     'version': 1,
