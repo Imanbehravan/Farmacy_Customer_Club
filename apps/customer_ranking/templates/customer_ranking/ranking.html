@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>باشگاه مشتریان | رتبه‌بندی</title>
+  <style>
+    body { font-family: Tahoma, sans-serif; background: #f5f7f6; margin: 0; padding: 24px; }
+    .box { max-width: 900px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; }
+    h1 { margin-top: 0; font-size: 20px; }
+    .filter { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+    .filter select, .filter input, .filter button { padding: 6px 10px; }
+    .summary { color: #555; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; border-bottom: 1px solid #e3e3e3; text-align: center; }
+    th { background: #1f6f5c; color: #fff; }
+    .empty { text-align: center; color: #888; padding: 32px; }
+    .actions { margin-top: 20px; padding: 16px; background: #f5f7f6; border-radius: 8px;
+               display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .actions select, .actions button { padding: 6px 12px; }
+    .errors { background: #fdecea; color: #b3261e; padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+    .confirm { background: #e8f5ef; border: 1px solid #1f6f5c; padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+    .confirm ul { margin: 8px 0; padding-right: 20px; }
+    .note { color: #888; font-size: 13px; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <h1>باشگاه مشتریان | رتبه‌بندی</h1>
+
+  <form method="get" class="filter">
+    <label>ماه:</label>
+    <select name="month">
+      {% for num, name in months %}
+        <option value="{{ num }}" {% if num == month %}selected{% endif %}>{{ name }}</option>
+      {% endfor %}
+    </select>
+    <label>سال:</label>
+    <input type="number" name="year" value="{{ year }}" min="1300" max="1500">
+    <button type="submit">نمایش</button>
+  </form>
+
+  <div class="summary">
+    ماه گزارش: {{ month_name }} {{ year }} | تعداد مشتریان: {{ customer_count }}
+  </div>
+
+  {% if errors %}
+  <div class="errors">
+    {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% if confirm %}
+  <div class="confirm">
+    <strong>برای {{ confirm.count }} مشتری، {{ confirm.percentage }}٪، {{ confirm.days }} روز</strong>
+    <ul>
+      {% for c in confirm.customers %}
+        <li>{{ c.name }} — {{ c.phone_number }}</li>
+      {% endfor %}
+    </ul>
+  
+  </div>
+  {% endif %}
+
+  {% if ranking %}
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="select-all" title="انتخاب همه"></th>
+          <th>رتبه</th>
+          <th>مشتری</th>
+          <th>شماره موبایل</th>
+          <th>تعداد خرید</th>
+          <th>مجموع خرید</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in ranking %}
+        <tr>
+          <td>
+            <input type="checkbox" name="user_ids" value="{{ row.user_id }}"
+                   {% if row.user_id in selected_ids %}checked{% endif %}>
+          </td>
+          <td>{{ row.rank }}</td>
+          <td>{{ row.name }}</td>
+          <td>{{ row.phone_number }}</td>
+          <td>{{ row.count }}</td>
+          <td>{{ row.total|floatformat:"0g" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="actions">
+      <label>درصد تخفیف:</label>
+      <select name="percentage">
+        {% for p in percentages %}
+          <option value="{{ p }}" {% if p == percentage %}selected{% endif %}>{{ p }}٪</option>
+        {% endfor %}
+      </select>
+
+      <label>اعتبار کد:</label>
+      <select name="days">
+        {% for d in valid_days %}
+          <option value="{{ d }}" {% if d == days %}selected{% endif %}>{{ d }} روز</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit">پیش‌نمایش</button>
+    </div>
+  </form>
+
+  <script>
+    document.getElementById('select-all').addEventListener('change', function () {
+      document.querySelectorAll('input[name="user_ids"]').forEach(function (cb) {
+        cb.checked = this.checked;
+      }, this);
+    });
+  </script>
+  {% else %}
+    <div class="empty">برای این ماه خریدی ثبت نشده است.</div>
+  {% endif %}
+</div>
+</body>
+</html>

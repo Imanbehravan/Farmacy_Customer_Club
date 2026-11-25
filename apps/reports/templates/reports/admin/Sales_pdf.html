@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { size: A4 landscape; margin: 14mm; }
+    body { font-family: Vazirmatn, "DejaVu Sans", sans-serif; font-size: 10px; color: #1f2937; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .meta { color: #6b7280; margin-bottom: 12px; }
+    .cards { width: 100%; margin-bottom: 14px; border-collapse: separate; border-spacing: 6px; }
+    .cards td { border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; text-align: center; }
+    .cards b { display: block; font-size: 14px; margin-top: 4px; }
+    table.data { width: 100%; border-collapse: collapse; }
+    table.data th, table.data td { border: 1px solid #d1d5db; padding: 5px 6px; text-align: right; }
+    table.data th { background: #eef0f4; }
+    table.data tr:nth-child(even) td { background: #fafafa; }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+    <h1>گزارش فروش نسخه‌ها</h1>
+    <div class="meta">تاریخ گزارش: {{ now }} | تعداد کل ردیف‌ها: {{ rows|length }}</div>
+
+    <table class="cards">
+        <tr>
+            <td>تعداد نسخه‌ها<b>{{ summary.count|default:0 }}</b></td>
+            <td>مبلغ بدون تخفیف<b>{{ summary.before_discount|default:0 }}</b></td>
+            <td>تخفیف / سهم بیمه<b>{{ summary.discount|default:0 }}</b></td>
+            <td>پرداختی نهایی<b>{{ summary.total|default:0 }}</b></td>
+        </tr>
+    </table>
+
+    <h2 style="font-size:13px">خلاصه ماهانه</h2>
+    <table class="data" style="margin-bottom:14px">
+        <thead><tr><th>ماه</th><th>تعداد</th><th>مبلغ فروش</th></tr></thead>
+        <tbody>
+        {% for m in months %}
+            <tr><td>{{ m.label }}</td><td>{{ m.count }}</td><td>{{ m.total }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2 style="font-size:13px">فهرست کامل نسخه‌ها</h2>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>#</th><th>تاریخ ثبت</th><th>کد رهگیری</th><th>موبایل</th>
+                <th>کد ملی</th><th>بیمه</th><th>وضعیت</th>
+                <th>مبلغ نسخه</th><th>پرداختی نهایی</th><th>تخفیف</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in rows %}
+            <tr>
+                <td>{{ r.id }}</td>
+                <td>{{ r.date }}</td>
+                <td>{{ r.tracking_code }}</td>
+                <td>{{ r.phone }}</td>
+                <td>{{ r.national_id }}</td>
+                <td>{{ r.insurance }}</td>
+                <td>{{ r.status }}</td>
+                <td>{{ r.original_amount }}</td>
+                <td>{{ r.amount }}</td>
+                <td>{{ r.discount }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

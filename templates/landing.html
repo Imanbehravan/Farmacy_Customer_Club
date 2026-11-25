@@ -1,1098 +1,1801 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>باشگاه مشتریان داروخانه</title>
-
-    <!-- فونت وزیرمتن -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" />
-    <!-- آیکون‌ها -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f6f2e9">
+    <title>باشگاه مشتریان داروخانه | همراهی در مسیر سلامتی</title>
+    <meta name="description" content="به باشگاه مشتریان داروخانه بپیوندید؛ فضایی برای همراهی بیشتر، توجه به سلامت روزمره و بهره‌مندی از مزایای ویژه اعضا.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* ===== Reset & Base ===== */
+        :root {
+            --paper: #f6f2e9;
+            --paper-dark: #eae5d9;
+            --ink: #262820;
+            --muted: #74766b;
+            --pink: #eab5bd;
+            --pink-light: #f3d6d7;
+            --sage: #b8c8a9;
+            --sage-dark: #657b59;
+            --lime: #d9e6a5;
+            --white: #fffdf8;
+            --line: rgba(38, 40, 32, .12);
+
+            --font: "Vazirmatn", Tahoma, sans-serif;
+            --page-padding: clamp(22px, 6vw, 100px);
+
+            --radius-sm: 14px;
+            --radius-md: 24px;
+            --radius-lg: 36px;
+            --radius-xl: 48px;
+
+            --shadow-soft: 0 12px 40px rgba(38, 40, 32, .06);
+            --shadow-card: 0 20px 55px rgba(38, 40, 32, .09);
+
+            --ease: cubic-bezier(.22, 1, .36, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 100px;
+        }
+
         body {
-            font-family: 'Vazirmatn', 'Segoe UI', system-ui, sans-serif;
-            background: #f5faf8;
-            color: #1a2e2b;
-            line-height: 1.7;
+            font-family: var(--font);
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.9;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--pink);
+            color: var(--ink);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* ===== رنگ‌ها ===== */
-        :root {
-            --primary: #0d7a66;
-            --primary-dark: #065a4a;
-            --primary-light: #2ecc9e;
-            --primary-pale: #e6f5f0;
-            --primary-gradient: linear-gradient(135deg, #0d7a66, #2ecc9e);
-            --text: #1e3d36;
-            --text-light: #4a6b60;
-            --white: #ffffff;
-            --shadow: 0 12px 40px rgba(13, 122, 102, 0.15);
-            --shadow-sm: 0 4px 20px rgba(13, 122, 102, 0.08);
-            --radius: 24px;
-            --radius-sm: 16px;
-        }
-
-        /* ===== Navbar حرفه‌ای ===== */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
-            flex-wrap: wrap;
-            gap: 12px;
-            position: relative;
-        }
-
-        .navbar::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
             width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            opacity: 0.3;
+            max-width: 1600px;
+            padding-inline: var(--page-padding);
+            margin-inline: auto;
         }
 
-        .logo {
-            display: flex;
+        .section-space {
+            padding-block: 125px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
             align-items: center;
-            gap: 12px;
-            font-size: 1.7rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            text-decoration: none;
-        }
-
-        .logo-icon {
-            background: var(--primary-gradient);
-            color: white;
-            padding: 10px 12px;
-            border-radius: 14px;
-            box-shadow: var(--shadow-sm);
-            font-size: 1.6rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s;
-        }
-
-        .logo:hover .logo-icon {
-            transform: rotate(-8deg) scale(1.05);
-        }
-
-        .logo-text {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-
-        .logo-text .main {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-        }
-
-        .logo-text .sub {
-            font-size: 0.65rem;
-            font-weight: 400;
-            color: var(--text-light);
-            letter-spacing: 1px;
-        }
-
-        /* ===== منوی ناوبری حرفه‌ای ===== */
-        .nav-links {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            background: var(--white);
-            padding: 6px;
-            border-radius: 60px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            border: 1px solid rgba(13, 122, 102, 0.06);
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--text);
-            font-weight: 500;
-            transition: 0.3s;
-            font-size: 0.9rem;
-            padding: 8px 18px;
-            border-radius: 40px;
-            position: relative;
-            white-space: nowrap;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-            background: var(--primary-pale);
-        }
-
-        .nav-links a.active {
-            background: var(--primary-gradient);
-            color: white;
-            box-shadow: 0 4px 15px rgba(13, 122, 102, 0.25);
-        }
-
-        .nav-links a.active:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(13, 122, 102, 0.35);
-        }
-
-        .nav-links .nav-divider {
-            width: 1px;
-            height: 28px;
-            background: rgba(13, 122, 102, 0.1);
-        }
-
-        .btn-nav {
-            background: var(--primary-gradient) !important;
-            color: white !important;
-            padding: 8px 24px !important;
-            border-radius: 40px !important;
-            font-weight: 700 !important;
-            box-shadow: 0 4px 20px rgba(13, 122, 102, 0.2);
-            transition: 0.3s !important;
-        }
-
-        .btn-nav:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 30px rgba(13, 122, 102, 0.3) !important;
-            background: var(--primary-dark) !important;
-        }
-
-        .btn-nav i {
-            margin-left: 6px;
-        }
-
-        /* ===== Hero ===== */
-        .hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 40px;
-            padding: 50px 0 30px;
-        }
-
-        .hero-content {
-            flex: 1;
-            min-width: 260px;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            background: var(--primary-pale);
-            color: var(--primary);
-            padding: 6px 20px;
-            border-radius: 50px;
-            font-size: 0.8rem;
+            gap: 10px;
+            font-size: 11px;
             font-weight: 700;
-            margin-bottom: 16px;
-            border: 1px solid rgba(13, 122, 102, 0.1);
+            color: var(--sage-dark);
+            letter-spacing: .08em;
         }
 
-        .hero-content h1 {
-            font-size: 3rem;
-            line-height: 1.2;
-            margin-bottom: 16px;
-            color: var(--primary-dark);
+        .eyebrow::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--sage-dark);
+            box-shadow: 0 0 0 5px rgba(184, 200, 169, .2);
+        }
+
+        .section-heading {
+            font-size: clamp(35px, 4.5vw, 62px);
+            line-height: 1.5;
             font-weight: 800;
+            letter-spacing: -.055em;
         }
 
-        .hero-content .highlight {
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .section-description {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 2.3;
         }
-
-        .hero-content p {
-            font-size: 1.1rem;
-            color: var(--text-light);
-            margin-bottom: 28px;
-            max-width: 480px;
+        .accent-text {
+            color: var(--sage-dark);
         }
-
-        .cta-buttons {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
+        .serif {
+            font-family: Georgia, "Times New Roman", serif;
+            font-style: italic;
+            font-weight: 400;
+        }
+        /* BUTTONS */
+        .btn {
+            min-height: 54px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            padding: 0 25px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 600;
+            transition:
+                transform .35s var(--ease),
+                background .35s,
+                color .35s,
+                box-shadow .35s;
         }
 
         .btn-primary {
-            background: var(--primary-gradient);
             color: white;
-            border: none;
-            padding: 14px 36px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 8px 30px rgba(13, 122, 102, 0.3);
+            background: var(--ink);
+            border: 1px solid var(--ink);
         }
 
         .btn-primary:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 40px rgba(13, 122, 102, 0.4);
+            background: var(--sage);
+            color: var(--ink);
+            border-color: var(--sage);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(101, 123, 89, .18);
         }
 
-        .btn-secondary {
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 12px 32px;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: 0.3s;
-            font-size: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        .btn-light {
+            background: var(--white);
+            color: var(--ink);
+            border: 1px solid rgba(38, 40, 32, .08);
         }
 
-        .btn-secondary:hover {
-            background: var(--primary-pale);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .hero-image {
-            flex: 1;
-            text-align: center;
-            min-width: 220px;
-        }
-
-        .hero-image .placeholder {
-            background: linear-gradient(135deg, var(--primary-pale), #c8e3db);
-            border-radius: 30px;
-            padding: 50px 30px;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-image .placeholder::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(46, 204, 158, 0.1), transparent 60%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            to { transform: rotate(360deg); }
-        }
-
-        .hero-image .placeholder i {
-            font-size: 5rem;
-            color: var(--primary);
-            opacity: 0.7;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-image .placeholder span {
-            display: block;
-            font-weight: 600;
-            color: var(--primary);
-            margin-top: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ===== Trust Bar ===== */
-        .trust-bar {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-            padding: 20px 0 40px;
-            border-bottom: 2px solid rgba(13, 122, 102, 0.06);
-        }
-
-        .trust-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .trust-item i {
-            color: var(--primary);
-            font-size: 1.2rem;
-        }
-
-        /* ===== Slider ===== */
-        .slider-section {
-            padding: 40px 0 50px;
-        }
-
-        .slider-container {
-            position: relative;
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            background: var(--primary-dark);
-        }
-
-        .slider-wrapper {
-            display: flex;
-            transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .slide {
-            min-width: 100%;
-            height: 380px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .slide-content {
-            background: rgba(6, 90, 74, 0.85);
-            backdrop-filter: blur(8px);
-            padding: 30px 40px;
-            border-radius: var(--radius-sm);
-            color: white;
-            text-align: center;
-            max-width: 80%;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeInUp 0.6s ease;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .slide-content .slide-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: var(--primary-light);
-        }
-
-        .slide-content h2 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-
-        .slide-content p {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
-        .slider-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: 0.3s;
-            z-index: 10;
-            width: 46px;
-            height: 46px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .slider-btn:hover {
-            background: var(--primary);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .slider-btn.prev { right: 14px; }
-        .slider-btn.next { left: 14px; }
-
-        .slider-dots {
-            position: absolute;
-            bottom: 18px;
-            left: 50%;
-            transform: translateX(50%);
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
-
-        .slider-dots .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.25);
-            cursor: pointer;
-            transition: 0.3s;
-            border: 2px solid transparent;
-        }
-
-        .slider-dots .dot.active {
-            background: var(--primary-light);
-            border-color: white;
-            transform: scale(1.2);
-        }
-
-        /* ===== Benefits ===== */
-        .benefits {
-            padding: 60px 0;
-            text-align: center;
-        }
-
-        .section-title {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            color: var(--primary-dark);
-            font-weight: 800;
-        }
-
-        .section-sub {
-            color: var(--text-light);
-            margin-bottom: 40px;
-            font-size: 1.05rem;
-        }
-
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 28px;
-        }
-
-        .benefit-card {
-            background: white;
-            padding: 32px 20px;
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 1px solid rgba(13, 122, 102, 0.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .benefit-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--primary-gradient);
-            opacity: 0;
-            transition: 0.4s;
-        }
-
-        .benefit-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow);
-            border-color: var(--primary);
-        }
-
-        .benefit-card:hover::before {
-            opacity: 1;
-        }
-
-        .benefit-card .icon-wrapper {
-            width: 70px;
-            height: 70px;
-            background: var(--primary-pale);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 2rem;
-            color: var(--primary);
-            transition: 0.4s;
-        }
-
-        .benefit-card:hover .icon-wrapper {
-            background: var(--primary-gradient);
-            color: white;
-            transform: rotate(-8deg) scale(1.05);
-        }
-
-        .benefit-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 6px;
-            color: var(--primary-dark);
-        }
-
-        .benefit-card p {
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        /* ===== CTA Banner ===== */
-        .cta-banner {
-            background: var(--primary-gradient);
-            padding: 50px 30px;
-            border-radius: var(--radius);
-            text-align: center;
-            color: white;
-            margin: 40px 0;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-banner::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent 60%);
-            animation: rotate 30s linear infinite;
-        }
-
-        .cta-banner h2 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .cta-banner p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .cta-banner .btn-white {
-            background: white;
-            color: var(--primary);
-            border: none;
-            padding: 14px 40px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            text-decoration: none;
-            display: inline-block;
-            position: relative;
-            z-index: 1;
-        }
-
-        .cta-banner .btn-white:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        /* ===== Footer ===== */
-        .footer {
-            background: var(--primary-dark);
-            color: #d4e8e2;
-            padding: 50px 0 30px;
-            border-radius: 40px 40px 0 0;
-            margin-top: 40px;
-        }
-
-        .footer-content {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .footer-col h4 {
-            color: white;
-            margin-bottom: 16px;
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .footer-col a {
-            display: block;
-            color: #b8d4cd;
-            text-decoration: none;
-            margin-bottom: 8px;
-            transition: 0.2s;
-            font-size: 0.9rem;
-        }
-
-        .footer-col a:hover {
-            color: var(--primary-light);
-            transform: translateX(-4px);
-        }
-
-        .footer-col .social {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .footer-col .social a {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            margin: 0;
-            transition: 0.3s;
-        }
-
-        .footer-col .social a:hover {
-            background: var(--primary);
+        .btn-light:hover {
+            background: var(--pink-light);
             transform: translateY(-3px);
         }
 
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 0.8rem;
-            color: #9ab9b0;
+        .btn-arrow {
+            display: inline-flex;
+            transition: transform .3s var(--ease);
+        }
+        .btn:hover .btn-arrow {
+            transform: translateX(-5px);
+        }
+        /* HEADER */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(246, 242, 233, .91);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(38, 40, 32, .08);
+        }
+        .navbar {
+            min-height: 86px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
         }
 
-        /* ===== Floating Button ===== */
-        .floating-login {
-            position: fixed;
-            bottom: 24px;
-            left: 24px;
-            background: var(--primary-gradient);
-            color: white;
-            padding: 12px 26px;
-            border-radius: 50px;
-            box-shadow: 0 8px 30px rgba(13, 122, 102, 0.35);
-            text-decoration: none;
-            font-weight: 700;
-            z-index: 100;
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .brand-symbol {
+            width: 43px;
+            height: 43px;
+            border-radius: 15px;
+            display: grid;
+            place-items: center;
+            color: var(--ink);
+            background: var(--sage);
+            transition: transform .4s var(--ease);
+        }
+
+        .brand:hover .brand-symbol {
+            transform: rotate(-10deg) scale(1.06);
+        }
+
+        .brand-symbol svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .brand-name {
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.5;
+        }
+
+        .brand-name small {
+            display: block;
+            font-size: 9px;
+            color: var(--muted);
+            font-weight: 400;
+            letter-spacing: .04em;
+        }
+
+        .nav-links {
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-            font-size: 0.9rem;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            gap: 34px;
         }
 
-        .floating-login:hover {
-            transform: scale(1.05) translateY(-3px);
-            box-shadow: 0 12px 40px rgba(13, 122, 102, 0.45);
+        .nav-links a {
+            position: relative;
+            font-size: 12px;
+            color: var(--muted);
+            transition: color .25s;
         }
 
-        /* ===== Responsive ===== */
-        @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                text-align: center;
-                padding: 12px 0;
-            }
+        .nav-links a::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            bottom: -8px;
+            width: 0;
+            height: 2px;
+            border-radius: 10px;
+            background: var(--sage-dark);
+            transition: width .3s var(--ease);
+        }
 
-            .logo {
-                justify-content: center;
-            }
+        .nav-links a:hover {
+            color: var(--ink);
+        }
 
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-                background: transparent;
-                padding: 0;
-                border-radius: 0;
-                box-shadow: none;
-                border: none;
-                gap: 4px;
-            }
+        .nav-links a:hover::after {
+            width: 100%;
+        }
 
-            .nav-links a {
-                font-size: 0.8rem;
-                padding: 6px 14px;
-            }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-            .nav-links .nav-divider {
-                display: none;
-            }
+        .header-login {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 45px;
+            padding: 0 20px;
+            border: 1px solid var(--ink);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            transition: .3s;
+        }
+        .header-login:hover {
+            color: white;
+            background: var(--ink);
+        }
+        /* HERO */
+        .hero {
+            min-height: 690px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 6%;
+            padding-block: 75px 100px;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        .hero-kicker {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
 
-            .btn-nav {
-                padding: 6px 18px !important;
-                font-size: 0.8rem !important;
+        .hero-kicker span:last-child {
+            color: var(--muted);
+            font-size: 10px;
+            letter-spacing: .1em;
+            direction: ltr;
+        }
+
+        .hero-title {
+            font-size: clamp(53px, 7vw, 98px);
+            font-weight: 800;
+            line-height: 1.35;
+            letter-spacing: -.075em;
+        }
+
+        .hero-title .line {
+            display: block;
+        }
+
+        .hero-title .highlight {
+            position: relative;
+            display: inline-block;
+            color: var(--sage-dark);
+            font-weight: 600;
+            isolation: isolate;
+        }
+
+        .hero-title .highlight::after {
+            content: "";
+            position: absolute;
+            height: 15px;
+            width: 100%;
+            right: 0;
+            bottom: 8px;
+            background: var(--pink);
+            border-radius: 50%;
+            opacity: .65;
+            transform: rotate(-2deg);
+            z-index: -1;
+        }
+
+        .hero-description {
+            max-width: 440px;
+            margin-top: 22px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 2.5;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        .hero-secondary {
+            font-size: 12px;
+            color: var(--muted);
+            transition: color .3s;
+        }
+
+        .hero-secondary:hover {
+            color: var(--sage-dark);
+        }
+
+        .hero-visual {
+            position: relative;
+            min-height: 520px;
+            isolation: isolate;
+        }
+
+        .hero-image-wrap {
+            position: absolute;
+            inset: 7% 7% 7% 7%;
+            overflow: hidden;
+            border-radius: 48% 48% 35px 35px;
+            background: var(--pink-light);
+            box-shadow: var(--shadow-card);
+        }
+
+        .hero-image-wrap img {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            padding: 5px;
+            transition: transform 1.1s var(--ease);
+        }
+
+        .hero-visual:hover .hero-image-wrap img {
+            transform: scale(1.045);
+        }
+
+        .hero-image-wrap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: transparent;
+            pointer-events: none;
+        }
+
+        .hero-circle {
+            position: absolute;
+            width: 145px;
+            height: 145px;
+            border-radius: 50%;
+            background: var(--sage);
+            top: 0;
+            right: -12px;
+            z-index: 2;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            transform: rotate(9deg);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .hero-circle span {
+            font-size: 11px;
+            line-height: 1.8;
+            font-weight: 700;
+        }
+
+        .hero-circle small {
+            display: block;
+            font-family: Georgia, serif;
+            font-size: 22px;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .hero-floating-card {
+            position: absolute;
+            bottom: 10%;
+            right: -8%;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 17px 20px;
+            background: var(--white);
+            border: 1px solid rgba(38, 40, 32, .06);
+            border-radius: 19px;
+            box-shadow: var(--shadow-card);
+            animation: floating 5s ease-in-out infinite;
+        }
+
+        .floating-icon {
+            width: 43px;
+            height: 43px;
+            display: grid;
+            place-items: center;
+            background: var(--pink-light);
+            border-radius: 14px;
+            font-size: 20px;
+        }
+
+        .floating-text strong {
+            display: block;
+            font-size: 11px;
+        }
+
+        .floating-text small {
+            display: block;
+            margin-top: 3px;
+            font-size: 9px;
+            color: var(--muted);
+        }
+
+        .hero-decor {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 1px solid var(--sage-dark);
+            border-radius: 50%;
+            opacity: .4;
+            left: -12px;
+            bottom: 5%;
+            z-index: -1;
+        }
+
+        .hero-decor::after {
+            content: "";
+            position: absolute;
+            inset: 13px;
+            border: 1px solid var(--sage-dark);
+            border-radius: 50%;
+        }
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        /* MARQUEE */
+        .marquee {
+            overflow: hidden;
+            background: var(--sage);
+            border-block: 1px solid rgba(38, 40, 32, .08);
+            transform: rotate(-1deg) scale(1.02);
+        }
+        .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: marquee 35s linear infinite;
+        }
+        .marquee:hover .marquee-track {
+            animation-play-state: paused;
+        }
+        .marquee-item {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            padding: 15px 25px;
+            white-space: nowrap;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .marquee-item span {
+            color: var(--white);
+            font-size: 24px;
+        }
+        @keyframes marquee {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        /* ABOUT */
+        .about {
+            display: grid;
+            grid-template-columns: .75fr 1.25fr;
+            gap: 10%;
+            align-items: center;
+            padding-block: 150px;
+        }
+
+        .about-aside {
+            position: relative;
+            min-height: 430px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .about-image {
+            width: 100%;
+            max-width: 480px;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            border-radius: 0;
+            overflow: visible;
+            background: transparent;
+            transform: none;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            transition: transform .8s var(--ease);
+        }
+
+        .about-aside:hover .about-image img {
+            transform: scale(1.035);
+        }
+
+        .about-content {
+            max-width: 690px;
+        }
+
+        .about-content .section-heading {
+            margin-top: 25px;
+        }
+
+        .about-content .section-description {
+            max-width: 510px;
+            margin-top: 22px;
+        }
+
+        .about-footer {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 35px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .about-footer::before {
+            content: "";
+            width: 38px;
+            height: 1px;
+            background: var(--sage-dark);
+        }
+        /* SPECIAL BENEFIT */
+        .benefit {
+            position: relative;
+            padding: 85px var(--page-padding);
+            overflow: hidden;
+            background: var(--pink);
+            isolation: isolate;
+        }
+
+        .benefit::before,
+        .benefit::after {
+            content: "";
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border: 1px solid rgba(38, 40, 32, .15);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .benefit::before {
+            left: -180px;
+            top: -180px;
+            box-shadow:
+                0 0 0 35px rgba(255, 255, 255, .08),
+                0 0 0 70px rgba(255, 255, 255, .08);
+        }
+
+        .benefit::after {
+            right: -350px;
+            bottom: -350px;
+            width: 600px;
+            height: 600px;
+        }
+
+        .benefit-inner {
+            max-width: 1600px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            align-items: center;
+            gap: 65px;
+        }
+
+        .benefit-content .eyebrow::before {
+            background: var(--ink);
+            box-shadow: 0 0 0 5px rgba(38, 40, 32, .1);
+        }
+
+        .benefit-title {
+            margin-top: 28px;
+            font-size: clamp(42px, 6.7vw, 88px);
+            line-height: 1.35;
+            font-weight: 800;
+            letter-spacing: -.075em;
+        }
+
+        .benefit-title span {
+            display: block;
+        }
+
+        .benefit-title .benefit-number {
+            font-size: clamp(46px, 7vw, 100px);
+            direction: ltr;
+            text-align: right;
+            white-space: nowrap;
+            letter-spacing: -.07em;
+        }
+
+        .benefit-subtitle {
+            margin-top: 5px;
+            font-size: 19px;
+            font-weight: 500;
+        }
+
+        .benefit-info {
+            position: relative;
+            padding: 36px;
+            border: 1px solid rgba(38, 40, 32, .17);
+            border-radius: 30px;
+            background: rgba(255, 253, 248, .35);
+            backdrop-filter: blur(8px);
+        }
+
+        .benefit-icon {
+            width: 55px;
+            height: 55px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            background: var(--white);
+            font-size: 24px;
+            margin-bottom: 24px;
+        }
+
+        .benefit-info h3 {
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        .benefit-info p {
+            margin-top: 15px;
+            color: rgba(38, 40, 32, .78);
+            font-size: 12px;
+            line-height: 2.4;
+        }
+
+        .benefit-info .btn {
+            width: 100%;
+            margin-top: 25px;
+        }
+        .bnefit-note {
+            display: block;
+            margin-top: 16px;
+            font-size: 9px;
+            line-height: 2;
+            color: rgba(38, 40, 32, .65);
+        }
+        /* FEATURES */
+        .features {
+            padding-block: 140px;
+        }
+
+        .features-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 30px;
+            margin-bottom: 55px;
+        }
+        .features-heading .section-description {
+            max-width: 310px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .feature-card {
+            min-height: 295px;
+            position: relative;
+            padding: 32px;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            background: var(--white);
+            border: 1px solid rgba(38, 40, 32, .06);
+            box-shadow: var(--shadow-soft);
+            transition:
+                transform .5s var(--ease),
+                box-shadow .5s var(--ease);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .feature-card:nth-child(2) {
+            background: var(--sage);
+        }
+
+        .feature-card:nth-child(3) {
+            background: var(--pink-light);
+        }
+
+        .feature-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            display: grid;
+            place-items: center;
+            border-radius: 20px;
+            background: var(--paper);
+            font-size: 25px;
+        }
+
+        .feature-number {
+            font-size: 12px;
+            color: var(--muted);
+            direction: ltr;
+        }
+
+        .feature-card h3 {
+            margin-top: 35px;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            max-width: 290px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 2.3;
+        }
+
+        .feature-decoration {
+            position: absolute;
+            left: -32px;
+            bottom: -60px;
+            width: 130px;
+            height: 130px;
+            border: 1px solid rgba(38, 40, 32, .14);
+            border-radius: 50%;
+            transition: transform .7s var(--ease);
+        }
+        .feature-card:hover .feature-decoration {
+            transform: scale(1.35) rotate(25deg);
+        }
+        /* STEPS */
+        .steps {
+            padding-block: 110px 145px;
+            background: var(--paper-dark);
+        }
+
+        .steps-inner {
+            max-width: 1600px;
+            margin: auto;
+            padding-inline: var(--page-padding);
+        }
+
+        .steps-heading {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 65px;
+        }
+
+        .steps-heading .section-heading {
+            margin-top: 20px;
+        }
+
+        .steps-heading p {
+            margin-top: 16px;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .step-card {
+            position: relative;
+            padding: 35px 30px;
+            min-height: 250px;
+            border-radius: 27px;
+            background: var(--white);
+            border: 1px solid rgba(38, 40, 32, .06);
+            transition: transform .4s var(--ease);
+        }
+
+        .step-card:hover {
+            transform: translateY(-7px);
+        }
+
+        .step-card:nth-child(2) {
+            transform: translateY(22px);
+            background: var(--sage);
+        }
+
+        .step-card:nth-child(2):hover {
+            transform: translateY(15px);
+        }
+
+        .step-card:nth-child(3) {
+            background: var(--pink-light);
+        }
+
+        .step-card-number {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .step-card-number span {
+            font-family: Georgia, serif;
+            font-size: 36px;
+            color: var(--sage-dark);
+            font-style: italic;
+        }
+
+        .step-card-icon {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .7);
+            font-size: 20px;
+        }
+
+        .step-card h3 {
+            margin-top: 35px;
+            font-size: 18px;
+        }
+
+        .step-card p {
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 2.3;
+        }
+        /* CLOSING */
+        .closing {
+            position: relative;
+            padding-block: 110px;
+            overflow: hidden;
+            background: var(--sage);
+            isolation: isolate;
+        }
+
+        .closing::before {
+            content: "";
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            left: -180px;
+            top: -220px;
+            border: 1px solid rgba(38, 40, 32, .18);
+            border-radius: 50%;
+            box-shadow:
+                0 0 0 35px rgba(255,255,255,.08),
+                0 0 0 70px rgba(255,255,255,.08);
+            z-index: -1;
+        }
+
+        .closing-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 45px;
+        }
+
+        .closing-content {
+            max-width: 800px;
+        }
+
+        .closing-title {
+            margin-top: 25px;
+            font-size: clamp(47px, 7vw, 95px);
+            line-height: 1.45;
+            letter-spacing: -.07em;
+            font-weight: 800;
+        }
+
+        .closing-title em {
+            font-family: Georgia, serif;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .closing-side {
+            max-width: 280px;
+            padding-bottom: 12px;
+        }
+        .closing-side p {
+            margin-bottom: 25px;
+            font-size: 12px;
+            line-height: 2.4;
+        }
+        /* FOOTER */
+        .footer {
+            padding-block: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .footer-links a {
+            font-size: 11px;
+            color: var(--muted);
+            transition: color .25s;
+        }
+        .footer-links a:hover {
+            color: var(--sage-dark);
+        }
+        .footer-copy {
+            font-size: 10px;
+            color: var(--muted);
+        }
+        .footer-trust {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .footer-trust img {
+            width: 80px;
+            height: auto;
+            display: block;
+        }
+        /* SCROLL ANIMATION */
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition:
+                opacity .8s var(--ease),
+                transform .8s var(--ease);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .delay-1 { transition-delay: .12s; }
+        .delay-2 { transition-delay: .23s; }
+        .delay-3 { transition-delay: .34s; }
+        /* RESPONSIVE */
+        @media (min-width: 1500px) {
+            .hero {
+                max-width: 1600px;
+                margin-inline: auto;
+            }
+        }
+
+        @media (max-width: 1050px) {
+            :root {
+                --page-padding: 40px;
             }
 
             .hero {
-                text-align: center;
-                padding: 30px 0 20px;
+                gap: 3%;
             }
 
-            .hero-content h1 {
-                font-size: 2.2rem;
+            .hero-title {
+                font-size: clamp(52px, 7vw, 75px);
             }
 
-            .hero-content p {
-                margin-left: auto;
-                margin-right: auto;
+            .hero-visual {
+                min-height: 440px;
             }
 
-            .cta-buttons {
-                justify-content: center;
+            .hero-floating-card {
+                right: -4%;
             }
 
-            .trust-bar {
-                gap: 20px;
+            .about {
+                gap: 5%;
             }
 
-            .slide {
-                height: 280px;
+            .benefit-inner {
+                gap: 35px;
             }
 
-            .slide-content h2 {
-                font-size: 1.4rem;
-            }
-
-            .slide-content {
-                padding: 20px 24px;
-                max-width: 90%;
-            }
-
-            .slider-btn {
-                width: 38px;
-                height: 38px;
-                font-size: 1rem;
-                padding: 8px;
-            }
-
-            .slider-btn.prev { right: 8px; }
-            .slider-btn.next { left: 8px; }
-
-            .section-title {
-                font-size: 1.8rem;
-            }
-
-            .cta-banner h2 {
-                font-size: 1.5rem;
-            }
-
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-col .social {
-                justify-content: center;
+            .feature-card {
+                padding: 25px;
             }
         }
 
-        @media (max-width: 480px) {
-            .hero-content h1 {
-                font-size: 1.8rem;
+        @media (max-width: 760px) {
+            :root {
+                --page-padding: 25px;
             }
 
-            .logo-text .main {
-                font-size: 1.1rem;
+            .section-space {
+                padding-block: 85px;
             }
 
-            .logo-icon {
-                padding: 8px 10px;
-                font-size: 1.2rem;
+            .navbar {
+                min-height: 73px;
             }
 
-            .nav-links a {
-                font-size: 0.7rem;
-                padding: 4px 10px;
+            .nav-links {
+                display: none;
             }
 
-            .btn-nav {
-                padding: 4px 14px !important;
-                font-size: 0.7rem !important;
+            .brand-symbol {
+                width: 38px;
+                height: 38px;
             }
 
-            .slide {
-                height: 220px;
+            .header-login {
+                min-height: 41px;
+                padding-inline: 15px;
             }
 
-            .slide-content h2 {
-                font-size: 1.1rem;
+            .hero {
+                min-height: auto;
+                grid-template-columns: 1fr;
+                padding-top: 60px;
+                padding-bottom: 80px;
+                gap: 30px;
             }
 
-            .slide-content p {
-                font-size: 0.85rem;
+            .hero-title {
+                font-size: clamp(55px, 12vw, 82px);
             }
 
-            .benefits-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 14px;
+            .hero-description {
+                font-size: 13px;
             }
 
-            .benefit-card {
-                padding: 20px 12px;
+            .hero-visual {
+                min-height: 450px;
+                max-width: 530px;
+                width: 100%;
+                margin-inline: auto;
             }
 
-            .benefit-card .icon-wrapper {
-                width: 54px;
-                height: 54px;
-                font-size: 1.5rem;
+            .hero-image-wrap {
+                inset: 6% 8%;
             }
 
-            .benefit-card h3 {
-                font-size: 0.95rem;
+            .hero-circle {
+                width: 115px;
+                height: 115px;
             }
 
-            .cta-banner {
-                padding: 30px 20px;
+            .hero-floating-card {
+                right: 0;
+                bottom: 8%;
             }
 
-            .cta-banner h2 {
-                font-size: 1.3rem;
+            .about {
+                grid-template-columns: 1fr;
+                gap: 35px;
+                padding-block: 95px;
+            }
+
+            .about-aside {
+                min-height: auto;
+                width: 100%;
+                max-width: 440px;
+                margin-inline: auto;
+                order: 2;
+            }
+
+            .about-image {
+                width: 100%;
+                max-width: 390px;
+                aspect-ratio: 1 / 1;
+            }
+
+            .about-content {
+                order: 1;
+            }
+
+            .benefit {
+                padding-block: 65px;
+            }
+
+            .benefit-inner {
+                grid-template-columns: 1fr;
+                gap: 35px;
+            }
+
+            .benefit-title {
+                font-size: clamp(49px, 11vw, 75px);
+            }
+
+            .benefit-title .benefit-number {
+                font-size: clamp(43px, 10vw, 72px);
+            }
+
+            .benefit-info {
+                padding: 28px;
+            }
+
+            .features {
+                padding-block: 95px;
+            }
+
+            .features-heading {
+                display: block;
+                margin-bottom: 35px;
+            }
+
+            .features-heading .section-description {
+                margin-top: 15px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .feature-card {
+                min-height: 245px;
+            }
+
+            .steps {
+                padding-block: 90px 110px;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .step-card {
+                min-height: 215px;
+            }
+
+            .step-card:nth-child(2) {
+                transform: none;
+            }
+
+            .step-card:nth-child(2):hover {
+                transform: translateY(-7px);
+            }
+
+            .closing {
+                padding-block: 80px;
+            }
+
+            .closing-inner {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .closing-title {
+                font-size: clamp(49px, 11vw, 75px);
+            }
+
+            .footer {
+                align-items: flex-start;
+                flex-direction: column;
+                padding-block: 30px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            :root {
+                --page-padding: 19px;
+            }
+
+            .brand-name {
+                font-size: 11px;
+            }
+
+            .brand-name small {
+                font-size: 8px;
+            }
+
+            .header-login {
+                font-size: 10px;
+                padding-inline: 12px;
+            }
+
+            .hero {
+                padding-top: 48px;
+            }
+
+            .hero-title {
+                font-size: clamp(49px, 13vw, 62px);
+            }
+
+            .hero-description {
+                font-size: 12px;
+            }
+
+            .hero-actions {
+                gap: 16px;
+            }
+
+            .hero-visual {
+                min-height: 365px;
+            }
+
+            .hero-circle {
+                width: 92px;
+                height: 92px;
+                right: -5px;
+            }
+
+            .hero-circle span {
+                font-size: 9px;
+            }
+
+            .hero-circle small {
+                font-size: 17px;
+            }
+
+            .hero-floating-card {
+                padding: 12px;
+                gap: 9px;
+            }
+
+            .floating-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 17px;
+            }
+
+            .floating-text strong {
+                font-size: 10px;
+            }
+
+            .floating-text small {
+                font-size: 8px;
+            }
+
+            .section-heading {
+                font-size: 36px;
+            }
+
+            .about-aside {
+                min-height: auto;
+            }
+
+            .about-image {
+                width: 100%;
+                max-width: 340px;
+            }
+
+            .benefit-title {
+                font-size: 48px;
+            }
+
+            .benefit-title .benefit-number {
+                font-size: clamp(38px, 10.5vw, 47px);
+            }
+
+            .benefit-subtitle {
+                font-size: 16px;
+            }
+
+            .benefit-info {
+                padding: 23px;
+            }
+
+            .marquee-item {
+                font-size: 16px;
+                gap: 18px;
+            }
+            .closing-title {
+                font-size: 48px;
+            }
+            .footer-links {
+                gap: 17px;
+            }
+        }
+        /* ACCESSIBILITY */
+        a:focus-visible {
+            outline: 2px solid var(--sage-dark);
+            outline-offset: 5px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+
+            .reveal {
+                opacity: 1;
+                transform: none;
             }
         }
     </style>
 </head>
 <body>
-
-    <!-- دکمه شناور -->
-    <a href="/login" class="floating-login">
-        <i class="fas fa-user-plus"></i> عضویت
-    </a>
-
-    <div class="container">
-        <!-- Navbar حرفه‌ای -->
-        <div class="navbar">
-            <a href="#" class="logo">
-                <span class="logo-icon"><i class="fas fa-prescription-bottle"></i></span>
-                <span class="logo-text">
-                    <span class="main">باشگاه مشتریان</span>
-                    <span class="sub">داروخانه تخصصی</span>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="navbar container">
+            <a href="#home" class="brand" aria-label="صفحه اصلی باشگاه مشتریان">
+                <span class="brand-symbol">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 3V21M3 12H21"
+                              stroke="currentColor"
+                              stroke-width="1.5"
+                              stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="8.5"
+                                stroke="currentColor"
+                                stroke-width="1.2"/>
+                    </svg>
+                </span>
+                <span class="brand-name">
+                    باشگاه مشتریان
+                    <small>داروخانه · PHARMACY CLUB</small>
                 </span>
             </a>
-            <div class="nav-links">
-                <a href="#" class="active"><i class="fas fa-home" style="margin-left:6px;"></i> خانه</a>
-                <a href="#benefits"><i class="fas fa-gem" style="margin-left:6px;"></i> مزایا</a>
-                <a href="#slider"><i class="fas fa-images" style="margin-left:6px;"></i> گالری</a>
-                <span class="nav-divider"></span>
-                <a href="/login" class="btn-nav">
-                    <i class="fas fa-sign-in-alt"></i> ورود به پنل
+            <nav class="nav-links" aria-label="منوی اصلی">
+                <a href="#about">درباره باشگاه</a>
+                <a href="#benefit">مزیت ویژه</a>
+                <a href="#features">مزایای عضویت</a>
+                <a href="#steps">راهنمای عضویت</a>
+            </nav>
+            <div class="header-actions">
+                <a href="{% url 'login' %}" class="header-login">
+                    ورود به پنل
+                    <span>←</span>
                 </a>
             </div>
         </div>
-
-        <!-- Hero -->
-        <div class="hero">
+    </header>
+    <main id="home">
+        <!-- HERO -->
+        <section class="hero container">
             <div class="hero-content">
-                <span class="hero-badge">🎉 عضویت رایگان و ویژه</span>
-                <h1>به <span class="highlight">باشگاه مشتریان</span> داروخانه خوش آمدید</h1>
-                <p>هر خرید = امتیاز، هر امتیاز = تخفیف ویژه. همراه با مشاوره رایگان و هدیه ماه تولد.</p>
-                <div class="cta-buttons">
-                    <a href="/login" class="btn-primary">
-                        عضویت رایگان <i class="fas fa-arrow-left"></i>
+                <div class="hero-kicker reveal">
+                    <span class="eyebrow">YOUR PHARMACY CLUB</span>
+                    <span>CARE FOR EVERY DAY</span>
+                </div>
+                <h1 class="hero-title reveal delay-1">
+                    <span class="line">سلامتی،</span>
+                    <span class="line">
+                        <span class="highlight">از توجه</span>
+                    </span>
+                    <span class="line">شروع می‌شود.</span>
+                </h1>
+                <p class="hero-description reveal delay-2">
+                    مراقبت از خود، از انتخاب‌های کوچک هر روز شروع می‌شود.
+                    باشگاه مشتریان داروخانه فضایی برای همراهی بیشتر،
+                    توجه به نیازهای سلامت و بهره‌مندی از مزایای ویژه
+                    در کنار شماست.
+                </p>
+                <div class="hero-actions reveal delay-3">
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        ورود به باشگاه
+                        <span class="btn-arrow">←</span>
                     </a>
-                    <a href="#benefits" class="btn-secondary">
-                        <i class="fas fa-info-circle"></i> بیشتر بدانید
+                    <a href="#about" class="hero-secondary">
+                        آشنایی با باشگاه ↓
                     </a>
                 </div>
             </div>
-            <div class="hero-image">
-                <div class="placeholder">
-                    <i class="fas fa-heartbeat"></i>
-                    <span>سلامت شما، اولویت ما</span>
-                    <small style="display:block; color:var(--text-light); margin-top:6px; font-size:0.85rem; position:relative; z-index:1;">
-                        داروخانه معتبر و تخصصی
+            <div class="hero-visual reveal delay-2">
+                <div class="hero-image-wrap">
+                    <img
+                        src="/media/medbox.png"
+                        alt="محصولات دارویی و بهداشتی داروخانه"
+                        fetchpriority="high"
+                    >
+                </div>
+                <div class="hero-circle">
+                    <span>
+                        A LITTLE
+                        <small>care</small>
+                        EVERY DAY
+                    </span>
+                </div>
+                <div class="hero-floating-card">
+                    <div class="floating-icon">✳</div>
+                    <div class="floating-text">
+                        <strong>همراهی در مسیر سلامتی</strong>
+                        <small>توجه به حال خوب تو، هر روز</small>
+                    </div>
+                </div>
+                <div class="hero-decor"></div>
+            </div>
+        </section>
+        <!-- MARQUEE -->
+        <div class="marquee" aria-label="پیام باشگاه مشتریان">
+            <div class="marquee-track">
+                {% for i in "1234" %}
+                    <div class="marquee-item" aria-hidden="true">
+                        سلامتی در کنار توجه‌های کوچک
+                        <span>✳</span>
+                        همراهی داروخانه در زندگی روزمره
+                        <span>✳</span>
+                        برای روزهایی سرشار از حال خوب
+                        <span>✳</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- ABOUT -->
+        <section class="about container" id="about">
+            <div class="about-aside reveal">
+                <div class="about-image">
+                    <img
+                        src="/media/aboutcare.png"
+                        alt="محصولات مرتبط با سلامت و مراقبت روزمره"
+                        loading="lazy"
+                    >
+                </div>
+            </div>
+            <div class="about-content">
+                <span class="eyebrow reveal">CARE STARTS WITH ATTENTION</span>
+                <h2 class="section-heading reveal delay-1">
+                    حال خوب،
+                    <br>
+                    از <span class="accent-text">مراقبت‌های کوچک</span>
+                    شروع می‌شود.
+                </h2>
+                <p class="section-description reveal delay-2">
+                    از رسیدگی به سلامت روزمره تا انتخاب محصولات دارویی،
+                    بهداشتی و مراقبتی، هر قدم کوچک می‌تواند بخشی از
+                    توجه ما به خودمان باشد. باشگاه مشتریان داروخانه
+                    با هدف قدردانی از همراهی شما شکل گرفته تا ارتباطی
+                    نزدیک‌تر و تجربه‌ای دلنشین‌تر در کنار داروخانه داشته باشید.
+                </p>
+                <div class="about-footer reveal delay-3">
+                    همراه شما در مسیر توجه بیشتر به سلامت
+                </div>
+            </div>
+        </section>
+        <!-- SPECIAL BENEFIT -->
+        <section class="benefit" id="benefit">
+            <div class="benefit-inner">
+                <div class="benefit-content reveal">
+                    <span class="eyebrow">A LITTLE EXTRA FOR OUR MEMBERS</span>
+                    <h2 class="benefit-title">
+                        <span>قدردانی از همراهی شما،</span>
+                        <span class="benefit-number">۱,۰۰۰,۰۰۰</span>
+                        <span class="benefit-subtitle">
+                            با مزایای ویژه باشگاه مشتریان.
+                        </span>
+                    </h2>
+                </div>
+                <div class="benefit-info reveal delay-2">
+                    <div class="benefit-icon">♡</div>
+                    <h3>یک امتیاز ویژه برای اعضا</h3>
+                    <p>
+                        برای خریدهای واجد شرایط تا سقف یک میلیون تومان،
+                        تخفیف‌های در نظر گرفته‌شده در باشگاه مشتریان
+                        قابل استفاده است. برای آگاهی از جزئیات و شرایط
+                        این مزیت، می‌توانید به پنل اختصاصی خود مراجعه کنید.
+                    </p>
+
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        مشاهده مزایای عضویت
+                        <span class="btn-arrow">←</span>
+                    </a>
+                    <small class="benefit-note">
+                        میزان تخفیف و شرایط استفاده از آن مطابق
+                        قوانین و پیشنهادهای فعال باشگاه مشتریان است.
                     </small>
                 </div>
             </div>
-        </div>
+        </section>
+        <!-- FEATURES -->
+        <section class="features container" id="features">
+            <div class="features-heading">
+                <div class="reveal">
+                    <span class="eyebrow">A CLUB THAT CARES</span>
+                    <h2 class="section-heading">
+                        عضویت در باشگاه،
+                        <br>
+                        <span class="accent-text">چه چیزی به همراه دارد؟</span>
+                    </h2>
+                </div>
+                <p class="section-description reveal delay-1">
+                    فضایی اختصاصی برای اعضا؛ با دسترسی آسان به
+                    اطلاعات، مزایا و پیشنهادهایی که برای همراهان
+                    داروخانه در نظر گرفته شده است.
+                </p>
+            </div>
+            <div class="features-grid">
+                <article class="feature-card reveal">
+                    <div class="feature-top">
+                        <div class="feature-icon">♡</div>
+                        <span class="feature-number">01 / CARE</span>
+                    </div>
+                    <h3>قدردانی از همراهی شما</h3>
+                    <p>
+                        عضویت شما فرصتی برای ارتباط نزدیک‌تر با داروخانه
+                        و بهره‌مندی از توجه و مزایای ویژه اعضاست.
+                    </p>
+                    <div class="feature-decoration"></div>
+                </article>
+                <article class="feature-card reveal delay-1">
+                    <div class="feature-top">
+                        <div class="feature-icon">✳</div>
+                        <span class="feature-number">02 / BENEFITS</span>
+                    </div>
+                    <h3>مزایای ویژه اعضا</h3>
+                    <p>
+                        از شرایط تخفیف‌ها و پیشنهادهای اختصاصی
+                        باشگاه مطلع شو و جزئیات آن‌ها را دنبال کن.
+                    </p>
+                    <div class="feature-decoration"></div>
+                </article>
+                <article class="feature-card reveal delay-2">
+                    <div class="feature-top">
+                        <div class="feature-icon">◌</div>
+                        <span class="feature-number">03 / ACCOUNT</span>
+                    </div>
+                    <h3>پنل اختصاصی و ساده</h3>
+                    <p>
+                        اطلاعات حساب کاربری، وضعیت عضویت و جزئیات
+                        مزایای خود را در یک فضای مشخص دنبال کن.
+                    </p>
+                    <div class="feature-decoration"></div>
+                </article>
+            </div>
+        </section>
+        <!-- HOW IT WORKS -->
+        <section class="steps" id="steps">
+            <div class="steps-inner">
+                <div class="steps-heading reveal">
+                    <span class="eyebrow">A SIMPLE WAY TO JOIN</span>
 
-        <!-- Trust Bar -->
-        <div class="trust-bar">
-            <div class="trust-item">
-                <i class="fas fa-check-circle"></i>
-                بیش از ۵۰,۰۰۰ عضو فعال
-            </div>
-            <div class="trust-item">
-                <i class="fas fa-star"></i>
-                امتیاز ۴.۸ از ۵
-            </div>
-            <div class="trust-item">
-                <i class="fas fa-shield-alt"></i>
-                ضمانت اصالت کالا
-            </div>
-            <div class="trust-item">
-                <i class="fas fa-truck"></i>
-                ارسال رایگان
-            </div>
-        </div>
-    </div>
-
-    <!-- Slider -->
-    <div class="slider-section" id="slider">
-        <div class="container">
-            <div class="slider-container">
-                <div class="slider-wrapper" id="sliderWrapper">
-                    <div class="slide" style="background: linear-gradient(135deg, #065a4a, #0d7a66);">
-                        <div class="slide-content">
-                            <div class="slide-icon"><i class="fas fa-gift"></i></div>
-                            <h2>هدیه ماه تولد</h2>
-                            <p>کد تخفیف ویژه + جایزه نقدی به امتیاز شما</p>
+                    <h2 class="section-heading">
+                        شروع یک همراهی،
+                        <br>
+                        به همین سادگی.
+                    </h2>
+                    <p class="section-description">
+                        عضویت در باشگاه مشتریان ساده است؛
+                        در چند قدم کوتاه به جمع همراهان داروخانه بپیوند.
+                    </p>
+                </div>
+                <div class="steps-grid">
+                    <article class="step-card reveal">
+                        <div class="step-card-number">
+                            <span>01</span>
+                            <div class="step-card-icon">↗</div>
                         </div>
-                    </div>
-                    <div class="slide" style="background: linear-gradient(135deg, #0d7a66, #2ecc9e);">
-                        <div class="slide-content">
-                            <div class="slide-icon"><i class="fas fa-percent"></i></div>
-                            <h2>تخفیف‌های شگفت‌انگیز</h2>
-                            <p>۲۰ تا ۵۰ درصد تخفیف برای اعضای باشگاه</p>
+                        <h3>ورود به باشگاه</h3>
+                        <p>
+                            با اطلاعات حساب کاربری خود وارد پنل
+                            اختصاصی باشگاه مشتریان شوید.
+                        </p>
+                    </article>
+                    <article class="step-card reveal delay-1">
+                        <div class="step-card-number">
+                            <span>02</span>
+                            <div class="step-card-icon">♡</div>
                         </div>
-                    </div>
-                    <div class="slide" style="background: linear-gradient(135deg, #065a4a, #1a8a72);">
-                        <div class="slide-content">
-                            <div class="slide-icon"><i class="fas fa-user-md"></i></div>
-                            <h2>مشاوره رایگان</h2>
-                            <p>با داروسازان مجرب به صورت آنلاین یا حضوری</p>
+                        <h3>آشنایی با مزایا</h3>
+                        <p>
+                            امکانات باشگاه، شرایط عضویت و مزایایی
+                            را که برای شما در نظر گرفته شده بررسی کنید.
+                        </p>
+                    </article>
+                    <article class="step-card reveal delay-2">
+                        <div class="step-card-number">
+                            <span>03</span>
+                            <div class="step-card-icon">✳</div>
                         </div>
-                    </div>
-                    <div class="slide" style="background: linear-gradient(135deg, #0d7a66, #1a8a72);">
-                        <div class="slide-content">
-                            <div class="slide-icon"><i class="fas fa-coins"></i></div>
-                            <h2>جمع‌آوری امتیاز</h2>
-                            <p>تبدیل امتیاز به کارت هدیه و خرید رایگان</p>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="slider-btn prev" id="prevBtn">‹</button>
-                <button class="slider-btn next" id="nextBtn">›</button>
-
-                <div class="slider-dots" id="sliderDots"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Benefits -->
-    <div class="benefits" id="benefits">
-        <div class="container">
-            <div class="section-title">✨ مزایای ویژه عضویت</div>
-            <div class="section-sub">خدمات انحصاری که فقط برای اعضای باشگاه در نظر گرفته شده</div>
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <div class="icon-wrapper"><i class="fas fa-percent"></i></div>
-                    <h3>۱۰٪ تخفیف دائمی</h3>
-                    <p>روی تمام داروهای بدون نسخه و مکمل‌ها</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="icon-wrapper"><i class="fas fa-gift"></i></div>
-                    <h3>هدیه ماه تولد</h3>
-                    <p>کد تخفیف ویژه به همراه جایزه نقدی</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="icon-wrapper"><i class="fas fa-calendar-check"></i></div>
-                    <h3>نوبت مشاوره رایگان</h3>
-                    <p>مشاوره با داروساز بدون هیچ هزینه‌ای</p>
-                </div>
-                <div class="benefit-card">
-                    <div class="icon-wrapper"><i class="fas fa-coins"></i></div>
-                    <h3>جمع‌آوری امتیاز</h3>
-                    <p>تبدیل امتیاز به کارت هدیه و خرید رایگان</p>
+                        <h3>همراهی و استفاده از مزایا</h3>
+                        <p>
+                            از مزایای فعال باشگاه بهره‌مند شوید
+                            و جزئیات آن‌ها را در پنل خود دنبال کنید.
+                        </p>
+                    </article>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- CTA Banner -->
-    <div class="container">
-        <div class="cta-banner">
-            <h2>🎯 همین حالا عضو شوید!</h2>
-            <p>با عضویت در باشگاه مشتریان، از تمام مزایای ویژه بهره‌مند شوید.</p>
-            <a href="/login" class="btn-white">عضویت رایگان <i class="fas fa-arrow-left"></i></a>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-col">
-                    <h4>باشگاه مشتریان</h4>
-                    <a href="#">درباره باشگاه</a>
-                    <a href="#">قوانین و مقررات</a>
-                    <a href="#">سوالات متداول</a>
+        </section>
+        <!-- CLOSING -->
+        <section class="closing">
+            <div class="closing-inner container">
+                <div class="closing-content reveal">
+                    <span class="eyebrow">A LITTLE MORE CARE, EVERY DAY</span>
+                    <h2 class="closing-title">
+                        به جمع همراهان ما
+                        <br>
+                        <em>خوش آمدی.</em>
+                    </h2>
                 </div>
-                <div class="footer-col">
-                    <h4>دسترسی سریع</h4>
-                    <a href="/login">عضویت / ورود</a>
-                    <a href="#">پشتیبانی</a>
-                    <a href="#">بیمه‌های طرف قرارداد</a>
-                </div>
-                <div class="footer-col">
-                    <h4>ارتباط با ما</h4>
-                    <a href="#"><i class="fas fa-phone" style="margin-left:8px;"></i> ۰۲۱-۱۲۳۴۵۶۷۸</a>
-                    <a href="#"><i class="fas fa-map-marker-alt" style="margin-left:8px;"></i> تهران، ولیعصر، پلاک ۳۲</a>
-                    <a href="#"><i class="fas fa-envelope" style="margin-left:8px;"></i> club@daarookhaneh.com</a>
-                    <div class="social">
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-telegram-plane"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp"></i></a>
-                        <a href="#"><i class="fab fa-aparat"></i></a>
-                    </div>
+                <div class="closing-side reveal delay-2">
+                    <p>
+                        مراقبت از خود، با توجه به نیازهای کوچک هر روز
+                        معنا پیدا می‌کند. به باشگاه مشتریان داروخانه
+                        بپیوند و از مزایای ویژه اعضا بهره‌مند شو.
+                    </p>
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        ورود به باشگاه مشتریان
+                        <span class="btn-arrow">←</span>
+                    </a>
                 </div>
             </div>
-            <div class="copyright">
-                © ۱۴۰۵ تمامی حقوق برای داروخانه سلامت محفوظ است
-            </div>
+        </section>
+    </main>
+    <!-- FOOTER -->
+    <footer class="footer container">
+        <a href="#home" class="brand">
+            <span class="brand-symbol">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3V21M3 12H21"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"/>
+                    <circle cx="12" cy="12" r="8.5"
+                            stroke="currentColor"
+                            stroke-width="1.2"/>
+                </svg>
+            </span>
+            <span class="brand-name">
+                باشگاه مشتریان
+                <small>PHARMACY CLUB</small>
+            </span>
+        </a>
+        <div class="footer-links">
+            <a href="#about">درباره باشگاه</a>
+            <a href="#benefit">مزایای ویژه</a>
+            <a href="#features">مزایای عضویت</a>
+            <a href="#steps">راهنمای عضویت</a>
+            <a href="{% url 'login' %}">ورود</a>
         </div>
-    </div>
-
-    <!-- Script -->
+        <div class="footer-trust">
+            <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=8795900&Code=1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo'>
+                <img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=8795900&Code=1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo' alt='نماد اعتماد الکترونیکی' style='cursor:pointer' code='1Isn0LuE9iA7LG7Ggs4GeAsNvWvqCHEo'>
+            </a>
+        </div>
+        <span class="footer-copy">
+            © تمامی حقوق محفوظ است.
+        </span>
+    </footer>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // ===== Slider =====
-            const wrapper = document.getElementById('sliderWrapper');
-            const slides = wrapper.querySelectorAll('.slide');
-            const total = slides.length;
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
-            const dotsContainer = document.getElementById('sliderDots');
+        /* REVEAL ON SCROLL */
+        const revealElements = document.querySelectorAll(".reveal");
 
-            let current = 0;
-            let autoPlay;
+        const prefersReducedMotion =
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-            function goTo(index) {
-                if (index < 0) index = total - 1;
-                if (index >= total) index = 0;
+        if ("IntersectionObserver" in window && !prefersReducedMotion) {
+
+            const observer = new IntersectionObserver(
+                (entries, observerInstance) => {
+
+                    entries.forEach(entry => {
+
+                        if (entry.isIntersecting) {
+
+                            entry.target.classList.add("visible");
+
+                            observerInstance.unobserve(entry.target);
+
+                        }
+
+                    });
+
+                },
+                {
+                    threshold: 0.12,
+                    rootMargin: "0px 0px -30px 0px"
+                }
+            );
+
+            revealElements.forEach(element => {
+                observer.observe(element);
+            });
+
+        } else {
+
+            revealElements.forEach(element => {
+                element.classList.add("visible");
+            });
+        }
+        /* MARQUEE ACCESSIBILITY */
+        if (prefersReducedMotion) {
+            const marquee = document.querySelector(".marquee-track");
+            if (marquee) {
+                marquee.style.animation = "none";
+            }
+        }
+        /* SMOOTH INTERNAL NAVIGATION */
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+
+            link.addEventListener("click", event => {
+
+                const targetId = link.getAttribute("href");
+
+                if (!targetId || targetId === "#") return;
+
+                const target = document.querySelector(targetId);
+
+                if (target) {
+
+                    event.preventDefault();
+
+                    target.scrollIntoView({
+                        behavior: prefersReducedMotion ? "auto" : "smooth",
+                        block: "start"
+                    });
+                }
+            });
+        });
+        /* IMAGE FALLBACK */
+        document.querySelectorAll("img").forEach(img => {
+
+            img.addEventListener("error", () => {
+
+                img.style.display = "none";
+
+                if (img.parentElement) {
+                    img.parentElement.classList.add("image-fallback");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

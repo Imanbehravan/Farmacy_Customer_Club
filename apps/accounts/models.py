@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -57,6 +57,7 @@ class OTPCode(models.Model):
     code = models.CharField(max_length=6, verbose_name='کد تایید')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     is_used = models.BooleanField(default=False, verbose_name='استفاده شده')
+    attempts = models.PositiveSmallIntegerField(default=0, verbose_name='تعداد تلاش ناموفق')
 
     class Meta:
         verbose_name = 'کد تایید'
@@ -68,7 +69,7 @@ class OTPCode(models.Model):
 
     @classmethod
     def generate_code(cls):
-        return ''.join(random.choices(string.digits, k=6))
+        return ''.join(secrets.choice(string.digits) for _ in range(6))
 
     def is_valid(self):
         import datetime
