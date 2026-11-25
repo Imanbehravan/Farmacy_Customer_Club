@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
 from .models import User, OTPCode
-from .sms import send_otp, SMSError
+from . import sms
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +68,15 @@ def resend_wait_seconds(phone):
     if not last:
         return 0
     passed = int((timezone.now() - last.created_at).total_seconds())
-    return max(0, settings.OTP_RESEND_SECONDS - passed)
+    return max(0, settings.OTP_COOLDOWN_SECONDS - passed)
 
 
 SENT, COOLDOWN, LIMITED, FAILED = 'sent', 'cooldown', 'limited', 'failed'
+
+
+def screen_mode():
+    """حالت موقت: نمایش کد روی صفحه، فقط وقتی کلید پیامک ثبت نشده باشد."""
+    return bool(getattr(settings, 'OTP_SHOW_ON_SCREEN', False)) and not sms.is_configured()
 
 
 def issue_otp(request, phone):
@@ -85,9 +90,9 @@ def issue_otp(request, phone):
 
     too_many = 'تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.'
     hour_ago = timezone.now() - timedelta(hours=1)
-    if OTPCode.objects.filter(phone_number=phone, created_at__gte=hour_ago).count() >= settings.OTP_MAX_SENDS_PER_HOUR:
+    if OTPCode.objects.filter(phone_number=phone, created_at__gte=hour_ago).count() >= settings.OTP_MAX_PER_HOUR:
         return LIMITED, too_many
-    if _count_hit(f'otp:ip:{client_ip(request)}', 3600) > settings.OTP_MAX_SENDS_PER_IP_HOUR:
+    if _count_hit(f'otp:ip:{client_ip(request)}', 3600) > settings.OTP_MAX_PER_IP_HOUR:
         return LIMITED, too_many
 
     OTPCode.objects.filter(phone_number=phone, is_used=False).update(is_used=True)
@@ -95,9 +100,14 @@ def issue_otp(request, phone):
     otp = OTPCode.objects.create(phone_number=phone, code=code)
     cache.delete(f'otp:fail:{phone}')
 
+    if screen_mode():
+        request.session['otp_display_code'] = code
+        return SENT, 'کد تایید ساخته شد و در صفحه‌ی بعد نمایش داده می‌شود.'
+    request.session.pop('otp_display_code', None)
+
     try:
-        send_otp(phone, code)
-    except SMSError as exc:
+        sms.send_otp(phone, code)
+    except sms.SMSError as exc:
         logger.error('ارسال پیامک به %s ناموفق بود: %s', phone, exc)
         otp.delete()  # ارسال ناموفق نباید در محدودیت‌ها حساب شود
         return FAILED, 'ارسال پیامک با مشکل مواجه شد. چند لحظه بعد دوباره تلاش کنید.'
@@ -140,7 +150,8 @@ class VerifyOTPView(View):
             'phone': phone,
             'phone_masked': mask_phone(phone),
             'resend_in': resend_wait_seconds(phone) if phone else 0,
-            'resend_total': settings.OTP_RESEND_SECONDS,
+            'resend_total': settings.OTP_COOLDOWN_SECONDS,
+            'otp_code': request.session.get('otp_display_code') if screen_mode() else None,
         }
 
     def get(self, request):
@@ -178,6 +189,7 @@ class VerifyOTPView(View):
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
             request.session.pop('otp_phone', None)
+            request.session.pop('otp_display_code', None)
 
             if created:
                 messages.success(request, 'ثبت نام شما با موفقیت انجام شد!')
@@ -188,7 +200,7 @@ class VerifyOTPView(View):
 
         except OTPCode.DoesNotExist:
             fails = _count_hit(fail_key, 600)
-            if fails >= settings.OTP_MAX_WRONG_ATTEMPTS:
+            if fails >= settings.OTP_MAX_ATTEMPTS:
                 # جلوگیری از حدس زدن کد: کد فعلی باطل می‌شود
                 OTPCode.objects.filter(phone_number=phone_number, is_used=False).update(is_used=True)
                 cache.delete(fail_key)
