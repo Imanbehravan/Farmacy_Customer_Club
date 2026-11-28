@@ -31,6 +31,14 @@
         </div>
         {% endif %}
 
+        {% if otp_code %}
+        <div class="ac-devcode">
+            <span>حالت آزمایشی (پیامک هنوز فعال نیست)</span>
+            <strong dir="ltr">{{ otp_code }}</strong>
+            <button type="button" id="fillOtp" data-code="{{ otp_code }}">درج خودکار</button>
+        </div>
+        {% endif %}
+
         <form class="ac-form" method="post" action="{% url 'verify_otp' %}" id="verifyForm">
             {% csrf_token %}
             <label class="ac-label" id="otpLabel">کد تأیید</label>
@@ -151,6 +159,10 @@
             if (empty) empty.focus();
         }
     });
+
+    // حالت آزمایشی: درج کد نمایش‌داده‌شده
+    const fillBtn = document.getElementById('fillOtp');
+    if (fillBtn) fillBtn.addEventListener('click', () => fill(0, toLatin(fillBtn.dataset.code).slice(0, boxes.length)));
 
     // کد اشتباه: لرزش کوتاه و پاک کردن خانه‌ها
     if (document.querySelector('[data-error-flag]')) {
