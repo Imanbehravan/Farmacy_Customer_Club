@@ -1,0 +1,14 @@
+{% load static %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<meta name="theme-color" content="#4e7034">
+<meta name="color-scheme" content="light">
+<meta name="application-name" content="{{ PWA_SHORT_NAME|default:'باشگاه مشتریان' }}">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="باشگاه مشتریان">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="{% static 'icons/favicon.png' %}">
+<link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">

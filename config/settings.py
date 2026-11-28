@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'apps.prescriptions',
     'apps.customer_club',
     'apps.notifications',
+    'apps.pwa',
     'apps.chat',
     'apps.blog',
     'django_filters',
@@ -53,6 +54,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.pwa.context_processors.pwa',
             ],
              "builtins": ["apps.reports.templatetags.reports_jalali"],
         },
@@ -171,9 +173,37 @@ LOGGING = {
         'apps.accounts': {'handlers': ['console'], 'level': 'INFO'},
     },
 }
+
+# ------------------------------------------------------------------
+# PWA و اعلان‌های Push
+# ------------------------------------------------------------------
+SITE_NAME = config('SITE_NAME', default='باشگاه مشتریان داروخانه')
+SITE_URL = config('SITE_URL', default='http://localhost')
+PHARMACY_NAME = config('PHARMACY_NAME', default='داروخانه دکتر شمشیرگران')
+PHARMACY_ADDRESS = config(
+    'PHARMACY_ADDRESS',
+    default='بیرجند، بلوار شهید آیت‌الله مدرس، پلاک ۱۹۹',
+)
+PWA_SHORT_NAME = config('PWA_SHORT_NAME', default='باشگاه مشتریان')
+PWA_THEME_COLOR = '#4e7034'        # سبز ماچا
+PWA_BACKGROUND_COLOR = '#f4f8ec'
+PWA_VERSION = config('PWA_VERSION', default='1')   # با عوض شدنش کش اپ روی گوشی‌ها نو می‌شود
+
+# کلیدها را با  python manage.py generate_vapid_keys  بسازید و در .env بگذارید
+VAPID_PUBLIC_KEY = config('VAPID_PUBLIC_KEY', default='').strip()
+VAPID_PRIVATE_KEY = config('VAPID_PRIVATE_KEY', default='').strip()
+VAPID_ADMIN_EMAIL = config('VAPID_ADMIN_EMAIL', default='admin@localhost.local').strip()
+PUSH_TTL_SECONDS = 60 * 60 * 24      # اگر دستگاه آفلاین بود تا ۲۴ ساعت نگه داشته شود
+PUSH_TIMEOUT_SECONDS = 10
+PUSH_ASYNC = config('PUSH_ASYNC', default=True, cast=bool)
+# اگر سرور داخل ایران به fcm.googleapis.com دسترسی ندارد، آدرس پروکسی را اینجا بدهید
+# مثال:  PUSH_PROXY_URL=http://user:pass@host:port   یا  socks5h://host:1080
+PUSH_PROXY_URL = config('PUSH_PROXY_URL', default='').strip()
+
 # پشت nginx با HTTPS / دامنه
 CSRF_TRUSTED_ORIGINS = [
     o.strip() for o in config('CSRF_TRUSTED_ORIGINS', default='').split(',') if o.strip()
 ]
 if config('USE_X_FORWARDED_PROTO', default=False, cast=bool):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+

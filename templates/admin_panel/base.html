@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}پنل مدیریت{% endblock %} | داروخانه</title>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   {% load static %}
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  {% include 'partials/pwa_head.html' %}
+  <title>{% block title %}پنل مدیریت{% endblock %} | داروخانه</title>
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}?v={{ PWA_VERSION }}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v={{ PWA_VERSION }}">
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}?v={{ PWA_VERSION }}">
   {% block extra_css %}{% endblock %}
 </head>
-<body class="admin-body">
+<body class="admin-body" data-auth="1" data-staff="1" data-vapid="{{ VAPID_PUBLIC_KEY }}">
 
 <div class="admin-layout">
 
   <!-- ══════ SIDEBAR ══════ -->
   <aside class="admin-sidebar">
     <div class="sidebar-brand">
-      <i class="fas fa-clinic-medical"></i>
+      <img src="{% static 'img/logo.png' %}" alt="logo">
       <span>پنل مدیریت</span>
     </div>
 
@@ -75,7 +73,7 @@
         <span>پنل کاربری</span>
       </a>
 
-      <a href="{% url 'logout' %}" class="nav-item nav-logout">
+      <a href="{% url 'logout' %}" class="nav-item nav-logout js-logout">
         <i class="fas fa-sign-out-alt"></i>
         <span>خروج</span>
       </a>
@@ -88,6 +86,9 @@
     <header class="admin-topbar">
       <h1>{% block page_title %}{% endblock %}</h1>
       <div class="admin-user">
+        <button type="button" class="icon-btn" data-push-enable hidden title="فعال‌سازی اعلان روی این دستگاه" aria-label="فعال‌سازی اعلان"><i class="fas fa-bell"></i></button>
+        <button type="button" class="icon-btn" data-push-test hidden title="ارسال اعلان آزمایشی" aria-label="اعلان آزمایشی"><i class="fas fa-bell-concierge"></i></button>
+        <button type="button" class="btn btn-sm btn-primary" data-pwa-install hidden><i class="fas fa-download"></i> نصب اپ</button>
         <i class="fas fa-user-shield"></i>
         <span>{{ request.user.phone_number }}</span>
       </div>
@@ -109,7 +110,8 @@
 
 </div>
 
-<script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/main.js' %}?v={{ PWA_VERSION }}"></script>
+<script src="{% static 'js/pwa.js' %}?v={{ PWA_VERSION }}"></script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>

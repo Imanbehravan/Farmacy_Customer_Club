@@ -1,132 +1,103 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta name="csrf-token" content="{{ csrf_token }}">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% include 'partials/pwa_head.html' %}
     <title>{% block title %}باشگاه مشتریان داروخانه{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}?v={{ PWA_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}?v={{ PWA_VERSION }}">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}"
+      data-auth="{{ user.is_authenticated|yesno:'1,0' }}"
+      data-staff="{{ user.is_staff|yesno:'1,0' }}"
+      data-vapid="{{ VAPID_PUBLIC_KEY }}">
 
+{% with current=request.resolver_match.url_name %}
 {% if user.is_authenticated %}
-<nav class="navbar">
-    <div class="navbar-brand">
-        <i class="fas fa-pills"></i>
-        <span>داروخانه</span>
-    </div>
-    <div class="navbar-menu">
-        <div class="notification-bell" id="notifBell">
-            <i class="fas fa-bell"></i>
-            <span class="notif-badge" id="notifBadge" style="display:none">0</span>
-            <div class="notif-dropdown" id="notifDropdown">
-                <div class="notif-header">
-                    <span>اعلان‌ها</span>
-                    <button onclick="markAllRead()" class="mark-all-btn">همه را خواندم</button>
+<div class="app-shell">
+
+    <!-- ═════ سایدبار دسکتاپ ═════ -->
+    <aside class="app-sidebar">
+        <a href="{% url 'dashboard' %}" class="sb-brand">
+            <img src="{% static 'img/logo.png' %}" alt="logo">
+            <div>
+                <strong>{{ PHARMACY_NAME }}</strong>
+                <small>CUSTOMER CLUB</small>
+            </div>
+        </a>
+
+        <nav class="sb-nav">
+            <a href="{% url 'dashboard' %}" class="sb-link {% if current == 'dashboard' %}active{% endif %}"><i class="fas fa-house"></i> خانه</a>
+            <a href="{% url 'dashboard' %}?action=prescription" class="sb-link"><i class="fas fa-file-prescription"></i> ثبت نسخه</a>
+            <a href="{% url 'my_prescriptions' %}" class="sb-link {% if current == 'my_prescriptions' %}active{% endif %}"><i class="fas fa-list-check"></i> نسخه‌های من</a>
+            <a href="{% url 'user_chat' %}" class="sb-link {% if current == 'user_chat' %}active{% endif %}"><i class="fas fa-user-doctor"></i> مشاوره با داروساز</a>
+            <a href="{% url 'notifications_page' %}" class="sb-link {% if current == 'notifications_page' %}active{% endif %}">
+                <i class="fas fa-bell"></i> اعلان‌ها <span class="count js-notif-count" hidden>0</span>
+            </a>
+            <a href="{% url 'blog' %}" class="sb-link {% if current == 'blog' %}active{% endif %}"><i class="fas fa-book-medical"></i> بلاگ و آموزش</a>
+            <a href="{% url 'profile' %}" class="sb-link {% if current == 'profile' %}active{% endif %}"><i class="fas fa-user"></i> پروفایل و تنظیمات</a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin_dashboard' %}" class="sb-link"><i class="fas fa-gauge-high"></i> پنل مدیریت</a>
+            {% endif %}
+        </nav>
+
+        <div class="sb-foot">
+            <div class="sb-user"><i class="fas fa-circle-user"></i> <span dir="ltr">{{ user.phone_number }}</span></div>
+            <a href="{% url 'logout' %}" class="sb-link js-logout"><i class="fas fa-arrow-right-from-bracket"></i> خروج</a>
+        </div>
+    </aside>
+
+    <!-- ═════ بدنه ═════ -->
+    <div class="app-main">
+        <header class="app-topbar">
+            <a href="{% url 'dashboard' %}" class="tb-brand">
+                <img src="{% static 'img/logo.png' %}" alt="logo">
+                <span>باشگاه مشتریان</span>
+            </a>
+            <h1 class="tb-title">{% block page_title %}خانه{% endblock %}</h1>
+            <span class="tb-spacer"></span>
+            <a href="{% url 'notifications_page' %}" class="icon-btn" aria-label="اعلان‌ها">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge js-notif-count" hidden>0</span>
+            </a>
+        </header>
+
+        <main class="app-content">
+{% endif %}
+            {% block messages %}
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible">
+                    {{ message }}
+                    <button onclick="this.parentElement.remove()" class="close-btn" aria-label="بستن">&times;</button>
                 </div>
-                <div id="notifList"></div>
+                {% endfor %}
             </div>
-        </div>
-        <div class="user-menu">
-            <i class="fas fa-user-circle"></i>
-            <span>{{ user.phone_number }}</span>
-            <div class="user-dropdown">
-                {% if user.is_staff %}
-                <a href="{% url 'admin_dashboard' %}"><i class="fas fa-cog"></i> پنل مدیریت</a>
-                {% endif %}
-                <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> خروج</a>
-            </div>
-        </div>
-    </div>
-</nav>
-{% endif %}
+            {% endif %}
+            {% endblock %}
 
-<main class="main-content">
-    {% block messages %}
-    {% if messages %}
-    <div class="messages-container">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible">
-            {{ message }}
-            <button onclick="this.parentElement.remove()" class="close-btn">&times;</button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-    {% endblock %}
+            {% if user.is_authenticated %}{% include 'partials/install_banner.html' %}{% endif %}
 
-    {% block content %}{% endblock %}
-</main>
-
-<script src="{% static 'js/main.js' %}"></script>
-{% block extra_js %}{% endblock %}
-
+            {% block content %}{% endblock %}
 {% if user.is_authenticated %}
-<script>
-    // Notification polling
-    function loadNotifications() {
-        fetch('/api/notifications/')
-            .then(r => r.json())
-            .then(data => {
-                const badge = document.getElementById('notifBadge');
-                const list = document.getElementById('notifList');
-                if (data.unread_count > 0) {
-                    badge.style.display = 'flex';
-                    badge.textContent = data.unread_count;
-                } else {
-                    badge.style.display = 'none';
-                }
-                if (list) {
-                    list.innerHTML = data.notifications.length === 0
-                        ? '<div class="notif-empty">اعلانی وجود ندارد</div>'
-                        : data.notifications.map(n => `
-                        <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="markRead(${n.id}, this)">
-                            <div class="notif-title">${n.title}</div>
-                            <div class="notif-msg">${n.message}</div>
-                            <div class="notif-time">${n.created_at}</div>
-                        </div>`).join('');
-                }
-            });
-    }
+        </main>
+    </div>
 
-    function markRead(id, el) {
-        fetch(`/api/notifications/${id}/read/`, {
-            method: 'POST',
-            headers: {'X-CSRFToken': getCookie('csrftoken')}
-        }).then(() => {
-            el.classList.remove('unread');
-            loadNotifications();
-        });
-    }
-
-    function markAllRead() {
-        fetch('/api/notifications/', {
-            method: 'POST',
-            headers: {'X-CSRFToken': getCookie('csrftoken')}
-        }).then(() => loadNotifications());
-    }
-
-    document.getElementById('notifBell').addEventListener('click', function(e) {
-        e.stopPropagation();
-        document.getElementById('notifDropdown').classList.toggle('show');
-    });
-    document.addEventListener('click', () => {
-        document.getElementById('notifDropdown').classList.remove('show');
-    });
-
-    function getCookie(name) {
-        let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-        return v ? v[2] : null;
-    }
-
-    loadNotifications();
-    setInterval(loadNotifications, 30000);
-</script>
+    <!-- ═════ نوار پایین موبایل ═════ -->
+    <nav class="tabbar" aria-label="ناوبری اصلی">
+        <a href="{% url 'dashboard' %}" class="tab {% if current == 'dashboard' %}active{% endif %}"><i class="fas fa-house"></i><span>خانه</span></a>
+        <a href="{% url 'my_prescriptions' %}" class="tab {% if current == 'my_prescriptions' %}active{% endif %}"><i class="fas fa-file-prescription"></i><span>نسخه‌ها</span></a>
+        <a href="{% url 'user_chat' %}" class="tab {% if current == 'user_chat' %}active{% endif %}"><i class="fas fa-user-doctor"></i><span>مشاوره</span></a>
+        <a href="{% url 'profile' %}" class="tab {% if current == 'profile' %}active{% endif %}"><i class="fas fa-user"></i><span>پروفایل</span></a>
+    </nav>
+</div>
 {% endif %}
+{% endwith %}
+
+<script src="{% static 'js/main.js' %}?v={{ PWA_VERSION }}"></script>
+<script src="{% static 'js/app.js' %}?v={{ PWA_VERSION }}"></script>
+<script src="{% static 'js/pwa.js' %}?v={{ PWA_VERSION }}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

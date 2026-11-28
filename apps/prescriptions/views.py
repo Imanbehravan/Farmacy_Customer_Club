@@ -56,6 +56,14 @@ class SubmitPrescriptionView(View):
             notification_type='prescription'
         )
 
+        try:
+            from apps.pwa.push import notify_staff
+            notify_staff('نسخه‌ی جدید ثبت شد', f'کد رهگیری {tracking_code} — {request.user.phone_number}',
+                         url=f'/admin-panel/prescriptions/{prescription.pk}/',
+                         tag=f'rx-{prescription.pk}', kind='prescription_new')
+        except Exception:
+            pass
+
         return JsonResponse({
             'success': True,
             'message': f'نسخه با کد رهگیری {tracking_code} در حال بررسی است.'

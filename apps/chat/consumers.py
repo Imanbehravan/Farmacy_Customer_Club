@@ -46,6 +46,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         is_admin = self.user.is_staff
         msg = await self.save_message(message_text, is_admin)
+        await self.push_chat(message_text, is_admin)
 
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -68,6 +69,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'time': event['time'],
             'id': event['id'],
         }))
+
+    @database_sync_to_async
+    def push_chat(self, message_text, is_admin):
+        """پیام جدید چت را به دستگاه‌های نصب‌شده‌ی طرف مقابل Push می‌کند."""
+        from apps.accounts.models import User
+        from apps.pwa import push
+        try:
+            if is_admin:
+                target = User.objects.get(id=self.room_user_id)
+                push.send_push_to_user(target, 'پاسخ داروساز', message_text,
+                                       url='/chat/', tag='chat', kind='chat')
+            else:
+                push.notify_staff(f'پیام جدید از {self.user.phone_number}', message_text,
+                                  url=f'/admin-panel/chat/{self.user.id}/',
+                                  tag=f'chat-{self.user.id}', kind='chat')
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception('chat push failed')
 
     @database_sync_to_async
     def get_or_create_room(self):

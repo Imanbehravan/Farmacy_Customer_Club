@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --primary: #4f46e5;
+            --primary: #4e7034;
             --primary-soft: rgba(79, 70, 229, 0.12);
             --bg: #f3f4f8;
             --card: #ffffff;
@@ -89,7 +89,7 @@
         }
         .stat .label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
         .stat .value { font-size: 22px; font-weight: bold; }
-        .stat.green { border-top-color: #10b981; }
+        .stat.green { border-top-color: #628740; }
         .stat.orange { border-top-color: #f59e0b; }
         .stat.red { border-top-color: #ef4444; }
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start; }
@@ -100,7 +100,7 @@
         tbody tr:hover { background: #f9fafb; }
         tbody tr:last-child td { border-bottom: 0; }
         .chart-wrap { position: relative; height: 340px; }
-        .up   { color: #059669; font-weight: 600; }
+        .up   { color: #4e7034; font-weight: 600; }
         .down { color: #dc2626; font-weight: 600; }
         .neutral { color: var(--muted); }
     </style>
@@ -199,7 +199,7 @@
 
     const segColor = ctx => {
         const i = ctx.p1DataIndex;
-        return sales[i] >= sales[i - 1] ? '#10b981' : '#ef4444';
+        return sales[i] >= sales[i - 1] ? '#628740' : '#ef4444';
     };
 
     new Chart(document.getElementById('salesChart'), {
@@ -211,13 +211,13 @@
                     label: 'مبلغ فروش (تومان)',
                     data: sales,
                     yAxisID: 'ySales',
-                    borderColor: '#4f46e5',
+                    borderColor: '#4e7034',
                     borderWidth: 3,
                     tension: 0.3,
                     pointRadius: 6,
                     pointHoverRadius: 8,
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: '#4f46e5',
+                    pointBorderColor: '#4e7034',
                     pointBorderWidth: 3,
                     segment: { borderColor: segColor },
                     order: 1

@@ -1,103 +1,87 @@
 /* ============================================
-   PHARMACY CUSTOMER CLUB - MAIN JS
+   باشگاه مشتریان — توابع عمومی
    ============================================ */
 
-// CSRF Cookie helper
 function getCookie(name) {
-  let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-  return v ? v[2] : null;
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? decodeURIComponent(v[2]) : null;
 }
 
-// Auto-dismiss alerts after 5 seconds
+function csrfToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return getCookie('csrftoken') || (meta && meta.content) || '';
+}
+
+// جلوگیری از XSS هنگام ساخت HTML از داده‌ی سرور/کاربر
+function esc(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function formatNumber(n) {
+  return parseInt(n, 10).toLocaleString('fa-IR');
+}
+
+function showToast(message, type) {
+  type = type || 'success';
+  const toast = document.createElement('div');
+  toast.className = 'alert alert-' + type + ' toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(function () {
+    toast.style.transition = 'opacity .3s ease';
+    toast.style.opacity = '0';
+    setTimeout(function () { toast.remove(); }, 300);
+  }, 3800);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
-  const alerts = document.querySelectorAll('.alert-dismissible');
-  alerts.forEach(alert => {
-    setTimeout(() => {
+  // بستن خودکار پیام‌ها بعد از ۵ ثانیه
+  document.querySelectorAll('.alert-dismissible').forEach(function (alert) {
+    setTimeout(function () {
+      alert.style.transition = 'all .3s ease';
       alert.style.opacity = '0';
       alert.style.transform = 'translateY(-8px)';
-      alert.style.transition = 'all .3s ease';
-      setTimeout(() => alert.remove(), 300);
+      setTimeout(function () { alert.remove(); }, 300);
     }, 5000);
   });
 
-  // Phone number formatter — only allow digits
-  const phoneInputs = document.querySelectorAll('input[type="tel"]');
-  phoneInputs.forEach(input => {
+  // فیلد موبایل: فقط رقم
+  document.querySelectorAll('input[type="tel"]').forEach(function (input) {
     input.addEventListener('input', function () {
-      this.value = this.value.replace(/[^0-9]/g, '');
+      this.value = this.value.replace(/[^0-9+\s]/g, '');
     });
   });
 
-  // National ID formatter
-  const nationalInputs = document.querySelectorAll('#nationalId, input[name="national_id"]');
-  nationalInputs.forEach(input => {
+  // کد ملی: ۱۰ رقم
+  document.querySelectorAll('#nationalId, input[name="national_id"]').forEach(function (input) {
     input.addEventListener('input', function () {
-      this.value = this.value.replace(/[^0-9]/g, '');
-      if (this.value.length > 10) this.value = this.value.slice(0, 10);
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
     });
   });
 
-  // OTP input auto-focus next field on 6 digits
-  const otpInput = document.querySelector('.otp-input');
-  if (otpInput) {
-    otpInput.addEventListener('input', function () {
-      this.value = this.value.replace(/[^0-9]/g, '');
-      if (this.value.length === 6) {
-        this.closest('form').submit();
-      }
-    });
-  }
-
-  // Add number formatting for amounts (admin purchase form)
+  // نمایش مبلغ به تومان (فرم ثبت خرید ادمین)
   const amountInput = document.querySelector('input[name="amount"]');
   if (amountInput) {
     amountInput.addEventListener('blur', function () {
-      const val = parseInt(this.value.replace(/,/g, ''));
+      const val = parseInt(this.value.replace(/,/g, ''), 10);
       if (!isNaN(val)) this.setAttribute('title', val.toLocaleString('fa-IR') + ' تومان');
     });
   }
 });
 
-// Modal close on overlay click
+// بستن مودال با کلیک روی پس‌زمینه یا Escape
 document.addEventListener('click', function (e) {
   const overlay = document.getElementById('prescriptionModal');
-  if (overlay && e.target === overlay) {
-    closePrescriptionModal && closePrescriptionModal();
+  if (overlay && e.target === overlay && typeof closePrescriptionModal === 'function') {
+    closePrescriptionModal();
   }
 });
-
-// Keyboard: Escape to close modal
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') {
-    const overlay = document.getElementById('prescriptionModal');
-    if (overlay && overlay.style.display !== 'none') {
-      closePrescriptionModal && closePrescriptionModal();
-    }
+  if (e.key !== 'Escape') return;
+  const overlay = document.getElementById('prescriptionModal');
+  if (overlay && overlay.style.display !== 'none' && typeof closePrescriptionModal === 'function') {
+    closePrescriptionModal();
   }
 });
-
-// Number formatting helper
-function formatNumber(n) {
-  return parseInt(n).toLocaleString('fa-IR');
-}
-
-// Toast notification helper (lightweight)
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `alert alert-${type}`;
-  toast.style.cssText = `
-    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-    z-index: 9999; min-width: 260px; text-align: center;
-    animation: slideUp .3s ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,.15);
-  `;
-  toast.innerHTML = message;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transition = '.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
-}
-
-

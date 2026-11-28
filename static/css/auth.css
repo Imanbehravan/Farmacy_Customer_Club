@@ -1,261 +1,87 @@
-/* ============================================
-   AUTH (ورود / تأیید کد پیامکی)
-   هماهنگ با صفحه‌ی اصلی: کاغذی، مریم‌گلی، صورتی ملایم
-   ============================================ */
-:root {
-  --ac-paper: #f6f2e9;
-  --ac-paper-dark: #eae5d9;
-  --ac-ink: #262820;
-  --ac-muted: #74766b;
-  --ac-sage: #b8c8a9;
-  --ac-sage-soft: #e4ebdb;
-  --ac-sage-dark: #657b59;
-  --ac-pink: #eab5bd;
-  --ac-pink-soft: #f9e4e6;
-  --ac-rose: #9b2c3f;
-  --ac-white: #fffdf8;
-  --ac-line: rgba(38, 40, 32, .14);
-  --ac-ease: cubic-bezier(.22, 1, .36, 1);
-}
-
-body:has(.ac-page) { background: var(--ac-paper); }
+/* ورود و تأیید کد — سبز ماچا */
+body:has(.ac-page) { background: var(--matcha-700); }
 
 .ac-page {
-  position: relative;
-  min-height: calc(100vh - 3rem);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-  padding: 24px 0;
-  isolation: isolate;
-  font-family: 'Vazirmatn', Tahoma, sans-serif;
-  color: var(--ac-ink);
+  min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: 1fr; align-content: center; justify-items: center;
+  gap: 1.4rem; padding: calc(1.5rem + var(--safe-top)) 1.1rem calc(1.5rem + var(--safe-bottom));
+  background: var(--matcha-700); position: relative; overflow: hidden; isolation: isolate;
 }
+.ac-page::before, .ac-page::after { content: ''; position: absolute; z-index: -1; border-radius: 50%; background: rgba(255,255,255,.07); }
+.ac-page::before { width: 520px; height: 520px; inset-inline-end: -200px; top: -220px; }
+.ac-page::after { width: 380px; height: 380px; inset-inline-start: -160px; bottom: -180px; background: rgba(0,0,0,.09); }
 
-/* دو حلقه‌ی هم‌مرکز، همان نشانه‌ی صفحه‌ی اصلی */
-.ac-page::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  width: 340px; height: 340px;
-  top: 4%; left: -170px;
-  border: 1px solid var(--ac-sage-dark);
-  border-radius: 50%;
-  opacity: .35;
-  box-shadow: 0 0 0 34px rgba(184,200,169,.14), 0 0 0 68px rgba(184,200,169,.10);
-}
+.ac-side { display: none; color: #fff; }
+.ac-eyebrow { display: block; direction: ltr; text-align: right; font-size: .7rem; letter-spacing: .24em; opacity: .75; font-weight: 600; margin-bottom: .8rem; }
+.ac-side h2 { font-size: 2.6rem; line-height: 1.5; font-weight: 800; }
+.ac-side p { margin-top: 1rem; font-size: 1rem; opacity: .9; }
+.ac-side small { display: block; margin-top: 2.4rem; direction: ltr; text-align: right; font-size: .68rem; letter-spacing: .2em; opacity: .65; }
 
 .ac-card {
-  width: 100%;
-  max-width: 440px;
-  padding: 40px 32px 32px;
-  background: var(--ac-white);
-  border: 1px solid var(--ac-line);
-  border-radius: 32px;
-  box-shadow: 0 20px 55px rgba(38, 40, 32, .09);
+  width: 100%; max-width: 430px; background: #fff; border-radius: 28px; padding: 2rem 1.6rem 1.4rem;
+  box-shadow: 0 24px 60px rgba(0,0,0,.22);
 }
+.ac-brand { width: 76px; height: 76px; margin: -3.4rem auto 1rem; background: #fff; border-radius: 24px; padding: 6px; box-shadow: 0 8px 22px rgba(0,0,0,.18); }
+.ac-brand img { width: 100%; height: 100%; object-fit: contain; border-radius: 18px; }
+.ac-title { text-align: center; font-size: 1.35rem; font-weight: 800; }
+.ac-sub { text-align: center; color: var(--muted); font-size: .86rem; margin: .5rem 0 1.4rem; line-height: 2; }
+.ac-sub strong { color: var(--ink); font-weight: 800; }
+.ac-link { color: var(--matcha-700); font-weight: 700; font-size: .82rem; }
+.ac-link:hover { text-decoration: underline; }
 
-.ac-brand {
-  width: 56px; height: 56px;
-  display: grid; place-items: center;
-  margin-bottom: 22px;
-  border-radius: 18px;
-  background: var(--ac-sage);
-  color: var(--ac-ink);
-}
-.ac-brand svg { width: 30px; height: 30px; }
+.ac-alerts { display: grid; gap: .5rem; margin-bottom: 1rem; }
+.ac-alert { padding: .7rem .95rem; border-radius: 12px; font-size: .84rem; border: 1px solid transparent; line-height: 1.8; }
+.ac-alert-success { background: var(--matcha-100); border-color: var(--matcha-300); color: var(--matcha-900); }
+.ac-alert-info { background: var(--matcha-50); border-color: var(--matcha-200); color: var(--matcha-800); }
+.ac-alert-error, .ac-alert-danger { background: #fdf0ee; border-color: #f1c4bd; color: #8e2a1f; }
+.ac-alert-warning { background: #fdf6e3; border-color: #ecd9a0; color: #7a5412; }
 
-.ac-title {
-  font-size: 26px;
-  font-weight: 800;
-  line-height: 1.5;
-  letter-spacing: -.02em;
-}
-.ac-sub {
-  margin-top: 6px;
-  font-size: 13px;
-  line-height: 2.1;
-  color: var(--ac-muted);
-}
-.ac-sub strong { color: var(--ac-ink); font-weight: 700; }
-.ac-sub bdi { direction: ltr; unicode-bidi: isolate; }
-
-.ac-link {
-  color: var(--ac-sage-dark);
-  font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
-}
-.ac-link:hover { color: var(--ac-ink); }
-
-/* پیام‌ها داخل کارت */
-.ac-alerts { margin-top: 22px; display: grid; gap: 8px; }
-.ac-alert {
-  padding: 11px 14px;
-  border-radius: 14px;
-  font-size: 12.5px;
-  line-height: 1.9;
-  border: 1px solid transparent;
-}
-.ac-alert-success { background: var(--ac-sage-soft); border-color: rgba(101,123,89,.3); color: #2f4326; }
-.ac-alert-info    { background: var(--ac-paper); border-color: var(--ac-line); color: var(--ac-ink); }
-.ac-alert-error,
-.ac-alert-danger  { background: var(--ac-pink-soft); border-color: rgba(155,44,63,.28); color: var(--ac-rose); }
-.ac-alert-warning { background: #fbf1d8; border-color: rgba(146,100,14,.3); color: #6d4a07; }
-
-.ac-form { margin-top: 26px; }
-
-.ac-label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 700;
-}
+.ac-label { display: block; font-size: .82rem; font-weight: 700; margin-bottom: .45rem; }
 .ac-input {
-  width: 100%;
-  height: 58px;
-  padding: 0 18px;
-  direction: ltr;
-  text-align: center;
-  font: 600 20px/1 'Vazirmatn', Tahoma, sans-serif;
-  letter-spacing: .08em;
-  color: var(--ac-ink);
-  background: var(--ac-paper);
-  border: 1.5px solid var(--ac-line);
-  border-radius: 18px;
-  outline: none;
-  transition: border-color .25s, box-shadow .25s, background .25s;
-}
-.ac-input::placeholder { color: #b3b3a6; font-weight: 400; letter-spacing: .06em; }
-.ac-input:focus {
-  background: var(--ac-white);
-  border-color: var(--ac-sage-dark);
-  box-shadow: 0 0 0 4px rgba(184, 200, 169, .45);
-}
-.ac-hint { display: block; margin-top: 10px; font-size: 11.5px; color: var(--ac-muted); line-height: 2; }
-
-.ac-btn {
-  width: 100%;
-  min-height: 56px;
-  margin-top: 22px;
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 0 24px;
-  font: 700 14px/1 'Vazirmatn', Tahoma, sans-serif;
-  color: #fff;
-  background: var(--ac-ink);
-  border: 1px solid var(--ac-ink);
-  border-radius: 100px;
-  cursor: pointer;
-  transition: background .3s, color .3s, border-color .3s, transform .3s var(--ac-ease), box-shadow .3s;
-}
-.ac-btn:hover:not(:disabled) {
-  background: var(--ac-sage);
-  color: var(--ac-ink);
-  border-color: var(--ac-sage);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(101, 123, 89, .2);
-}
-.ac-btn:disabled { opacity: .6; cursor: progress; }
-.ac-btn:focus-visible, .ac-link:focus-visible, .ac-resend-btn:focus-visible {
-  outline: 2px solid var(--ac-sage-dark);
-  outline-offset: 4px;
-}
-
-/* ---------- کد ۶ رقمی ---------- */
-.ac-otp {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
-  direction: ltr;
-}
-.ac-otp-box {
-  width: 100%;
-  aspect-ratio: 1 / 1.2;
-  min-width: 0;
-  padding: 0;
-  text-align: center;
-  font: 800 26px/1 'Vazirmatn', Tahoma, sans-serif;
-  color: var(--ac-ink);
-  background: var(--ac-paper);
-  border: 1.5px solid var(--ac-line);
-  border-radius: 16px;
-  outline: none;
-  caret-color: var(--ac-sage-dark);
+  width: 100%; min-height: 54px; padding: .6rem 1rem; font-size: 1.15rem; letter-spacing: .08em; direction: ltr; text-align: center;
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 16px; color: var(--ink);
   transition: border-color .2s, box-shadow .2s, background .2s;
 }
-.ac-otp-box:focus {
-  background: var(--ac-white);
-  border-color: var(--ac-sage-dark);
-  box-shadow: 0 0 0 4px rgba(184, 200, 169, .45);
-}
-.ac-otp-box.is-filled { background: var(--ac-sage-soft); border-color: var(--ac-sage-dark); }
-.ac-otp.is-error .ac-otp-box {
-  background: var(--ac-pink-soft);
-  border-color: var(--ac-rose);
-  animation: ac-shake .45s var(--ac-ease);
-}
-@keyframes ac-shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
-}
+.ac-input:focus { background: #fff; border-color: var(--matcha-600); box-shadow: 0 0 0 4px rgba(125,161,80,.2); }
+.ac-input::placeholder { color: #b0b7a5; letter-spacing: .04em; }
+.ac-hint { display: block; margin-top: .7rem; font-size: .75rem; color: var(--muted); line-height: 2; }
 
-/* ---------- ارسال مجدد ---------- */
-.ac-resend {
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid var(--ac-line);
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  min-height: 72px;
-  font-size: 12.5px;
-  color: var(--ac-muted);
+.ac-btn {
+  width: 100%; min-height: 54px; margin-top: 1.1rem; border-radius: 16px; background: var(--ink); color: #fff;
+  font-size: .98rem; font-weight: 800; transition: transform .2s, background .2s, opacity .2s;
 }
-.ac-ring { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
-.ac-ring svg { width: 52px; height: 52px; transform: rotate(-90deg); }
-.ac-ring circle { fill: none; stroke-width: 3; }
-.ac-ring .track { stroke: var(--ac-paper-dark); }
-.ac-ring .bar { stroke: var(--ac-sage-dark); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-.ac-ring span {
-  position: absolute; inset: 0;
-  display: grid; place-items: center;
-  font-size: 11.5px; font-weight: 700; color: var(--ac-ink);
-  direction: ltr;
+.ac-btn:hover { background: #000; }
+.ac-btn:active { transform: scale(.98); }
+.ac-btn:disabled { opacity: .6; cursor: wait; }
+
+.ac-otp { display: flex; gap: .5rem; direction: ltr; justify-content: center; }
+.ac-otp-box {
+  width: 100%; max-width: 54px; height: 62px; text-align: center; font-size: 1.5rem; font-weight: 800; color: var(--ink);
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 16px; caret-color: var(--matcha-700);
+  transition: border-color .2s, box-shadow .2s, background .2s;
 }
-.ac-resend-btn {
-  padding: 11px 22px;
-  font: 700 13px/1 'Vazirmatn', Tahoma, sans-serif;
-  color: var(--ac-ink);
-  background: transparent;
-  border: 1.5px solid var(--ac-ink);
-  border-radius: 100px;
-  cursor: pointer;
-  transition: background .3s, color .3s;
-}
-.ac-resend-btn:hover { background: var(--ac-pink-soft); }
+.ac-otp-box:focus { background: #fff; border-color: var(--matcha-600); box-shadow: 0 0 0 4px rgba(125,161,80,.2); }
+.ac-otp-box.is-filled { background: var(--matcha-100); border-color: var(--matcha-500); }
+.ac-otp.is-error .ac-otp-box { border-color: #c0392b; background: #fdf0ee; animation: ac-shake .4s; }
+@keyframes ac-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+.ac-resend { display: flex; align-items: center; justify-content: center; gap: .7rem; margin-top: 1.1rem; font-size: .82rem; color: var(--muted); min-height: 52px; }
 .ac-resend [hidden] { display: none !important; }
+.ac-ring { position: relative; width: 52px; height: 52px; }
+.ac-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ac-ring circle { fill: none; stroke-width: 4; }
+.ac-ring .track { stroke: var(--matcha-100); }
+.ac-ring .bar { stroke: var(--matcha-600); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.ac-ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: .72rem; font-weight: 800; color: var(--ink); }
+.ac-resend-btn { background: var(--matcha-100); color: var(--matcha-900); font-weight: 800; padding: .65rem 1.4rem; border-radius: 14px; font-size: .88rem; }
+.ac-resend-btn:hover { background: var(--matcha-200); }
 
-.ac-foot {
-  margin-top: 22px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  font-size: 11.5px; color: var(--ac-muted);
-}
+.ac-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+.ac-seal img { max-height: 54px; width: auto; }
 
-.ac-seal img { width: 72px; height: auto; display: block; opacity: .95; }
-
-@media (max-width: 480px) {
-  .ac-card { padding: 32px 22px 26px; border-radius: 28px; }
-  .ac-title { font-size: 23px; }
-  .ac-otp { gap: 7px; }
-  .ac-otp-box { font-size: 22px; border-radius: 14px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ac-ring .bar, .ac-btn, .ac-input, .ac-otp-box { transition: none; }
-  .ac-otp.is-error .ac-otp-box { animation: none; }
+@media (min-width: 992px) {
+  .ac-page { grid-template-columns: 1fr 430px; gap: 5rem; max-width: 1100px; margin-inline: auto; justify-items: stretch; }
+  .ac-side { display: block; }
+  .ac-card { justify-self: center; }
 }
 
 /* حالت آزمایشی: نمایش کد روی صفحه (فقط وقتی پیامک فعال نیست) */

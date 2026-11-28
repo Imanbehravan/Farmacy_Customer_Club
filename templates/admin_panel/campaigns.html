@@ -28,7 +28,7 @@
           <input type="number" name="percentage" class="form-input"
             placeholder="مثال: 15" min="1" max="90" required
             id="campPct" oninput="previewDiscount(this.value)">
-          <span style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:#1a7a4a;font-weight:700">٪</span>
+          <span style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:#4e7034;font-weight:700">٪</span>
         </div>
         <span class="form-hint" id="pctPreview"></span>
       </div>
@@ -115,11 +115,11 @@
 <style>
 .campaign-form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
 .campaign-card{display:flex;align-items:center;gap:1.2rem;padding:1rem 1.2rem;border-radius:10px;border:1.5px solid #e2e8f0}
-.camp-active{border-color:#a7f3d0;background:#f0fff7}
+.camp-active{border-color:#d4e3b8;background:#f5f8ee}
 .camp-inactive{border-color:#e2e8f0;background:#f8fafc;opacity:.7}
 .camp-left{flex-shrink:0}
 .camp-pct-circle{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800}
-.pct-active{background:linear-gradient(135deg,#1a7a4a,#2dbe78);color:#fff;box-shadow:0 4px 12px rgba(26,122,74,.3)}
+.pct-active{background:linear-gradient(135deg,#4e7034,#7da150);color:#fff;box-shadow:0 4px 12px rgba(78,112,52,.3)}
 .pct-inactive{background:#e2e8f0;color:#94a3b8}
 .camp-body{flex:1;min-width:0}
 .camp-name{font-weight:700;font-size:.95rem;margin-bottom:.4rem}
@@ -140,7 +140,7 @@ function previewDiscount(val) {
     const ex = 500000;
     const saved = Math.round(ex * n / 100);
     p.textContent = `مثال: از ${ex.toLocaleString('fa-IR')} تومان → ${(ex-saved).toLocaleString('fa-IR')} تومان (صرفه‌جویی: ${saved.toLocaleString('fa-IR')} ت)`;
-    p.style.color = '#1a7a4a';
+    p.style.color = '#4e7034';
   } else { p.textContent = ''; }
 }
 </script>

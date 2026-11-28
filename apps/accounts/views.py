@@ -276,13 +276,37 @@ class DashboardView(View):
             purchase_date__gt=count_from
         ).aggregate(total=models.Sum('amount'))['total'] or 0
 
+        threshold = getattr(settings, 'MONTHLY_PURCHASE_THRESHOLD', 1_000_000)
         context = {
             'notifications': notifications,
             'active_discount': active_discount,
             'monthly_total': monthly_total,
-            'threshold': 1_000_000,
+            'threshold': threshold,
+            'progress_percent': min(100, int(monthly_total * 100 / threshold)) if threshold else 0,
         }
         return render(request, self.template_name, context)
+
+
+class ProfileView(View):
+    """پروفایل، نصب اپلیکیشن و تنظیم اعلان‌ها."""
+    template_name = 'accounts/profile.html'
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        return render(request, self.template_name, {
+            'devices': request.user.push_subscriptions.count(),
+        })
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return redirect('login')
+        user = request.user
+        user.first_name = request.POST.get('first_name', '').strip()[:50]
+        user.last_name = request.POST.get('last_name', '').strip()[:50]
+        user.save(update_fields=['first_name', 'last_name'])
+        messages.success(request, 'اطلاعات شما ذخیره شد.')
+        return redirect('profile')
 
 
 # Import needed for aggregate
