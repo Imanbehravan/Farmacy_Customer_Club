@@ -1,110 +1,87 @@
 {% extends 'base.html' %}
-{% load reports_jalali %}
-{% block title %}داشبورد | باشگاه مشتریان داروخانه{% endblock %}
+{% load static %}
+{% block title %}خانه | باشگاه مشتریان داروخانه{% endblock %}
+{% block page_title %}خانه{% endblock %}
+
 {% block content %}
-<div class="dashboard-wrapper">
-    <!-- Welcome Banner -->
-    <div class="welcome-banner">
-        <div class="welcome-text">
-            <h2>سلام، {{ user.full_name|default:user.phone_number }} 👋</h2>
-            <p>به باشگاه مشتریان داروخانه خوش آمدید</p>
-        </div>
-        <div class="welcome-icon">
-            <i class="fas fa-clinic-medical"></i>
+<section class="hero">
+    <div>
+        <span class="eyebrow">YOUR PHARMACY CLUB</span>
+        <h1>سلام{% if user.first_name %}، {{ user.first_name }}{% endif %} 👋<br>سلامتی، با انتخاب درست شروع می‌شود.</h1>
+        <p>ثبت نسخه، مشاوره‌ی دارویی و مزایای ویژه‌ی اعضای باشگاه؛ همه در یک‌جا.</p>
+        <button type="button" class="btn btn-dark" onclick="openPrescriptionModal()">
+            ثبت نسخه <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+    <div class="hero-art"><img src="/media/medbox.png" alt="" loading="lazy"></div>
+</section>
+
+<div class="card" data-push-prompt hidden style="margin-top:1rem">
+    <h3><i class="fas fa-bell"></i> اعلان‌ها را فعال کنید</h3>
+    <p>وضعیت نسخه، پاسخ داروساز و تخفیف‌های ویژه را همان لحظه روی همین دستگاه دریافت کنید.</p>
+    <button type="button" class="btn btn-primary" data-push-enable>فعال‌سازی اعلان‌ها</button>
+</div>
+
+<div class="section-title"><h2>دسترسی سریع</h2></div>
+<div class="tiles">
+    <button type="button" class="tile" onclick="openPrescriptionModal()">
+        <i class="fas fa-file-prescription ti"></i>
+        <div><h3>ثبت نسخه</h3><p>کد رهگیری نسخه را ثبت کنید</p></div>
+    </button>
+    <a href="{% url 'user_chat' %}" class="tile">
+        <i class="fas fa-user-doctor ti"></i>
+        <div><h3>مشاوره با داروساز</h3><p>سؤال دارویی خود را بپرسید</p></div>
+    </a>
+    <a href="{% url 'my_prescriptions' %}" class="tile">
+        <i class="fas fa-list-check ti"></i>
+        <div><h3>نسخه‌های من</h3><p>تاریخچه و وضعیت نسخه‌ها</p></div>
+    </a>
+    <a href="{% url 'blog' %}" class="tile">
+        <i class="fas fa-book-medical ti"></i>
+        <span class="tag">به‌زودی</span>
+        <div><h3>بلاگ و آموزش</h3><p>مقالات سلامت و داروشناسی</p></div>
+    </a>
+</div>
+
+<div class="section-title"><h2>مزایای باشگاه</h2></div>
+{% if active_discount %}
+<div class="discount-banner">
+    <div class="discount-content">
+        <i class="fas fa-gift"></i>
+        <div>
+            <strong>تخفیف ویژه {{ active_discount.percentage }}٪ فعال است!</strong>
+            <p>برای اقلام آرایشی-بهداشتی تا {{ active_discount.expires_at|jalali:"%Y/%m/%d" }} معتبر است</p>
         </div>
     </div>
+    <div class="discount-badge">{{ active_discount.percentage }}%</div>
+</div>
+{% endif %}
 
-    <!-- Active Discount Banner -->
-    {% if active_discount %}
-    <div class="discount-banner">
-        <div class="discount-content">
-            <i class="fas fa-gift"></i>
-            <div>
-                <strong>تخفیف ویژه {{ active_discount.percentage }}٪ فعال است!</strong>
-                <p>برای اقلام آرایشی-بهداشتی تا {{ active_discount.expires_at|jalali:"%Y/%m/%d" }} معتبر است</p>
-            </div>
-        </div>
-        <div class="discount-badge">{{ active_discount.percentage }}%</div>
+<div class="progress-card">
+    <div class="progress-header">
+        <span><i class="fas fa-chart-line"></i> خرید ماهانه‌ی شما</span>
+        <span class="progress-amount">{{ monthly_total|floatformat:0 }} تومان</span>
     </div>
-    {% endif %}
-
-    <!-- Monthly Progress -->
-    <div class="progress-card">
-        <div class="progress-header">
-            <span><i class="fas fa-chart-line"></i> خرید ماهانه شما</span>
-            <span class="progress-amount">{{ monthly_total|floatformat:0 }} تومان</span>
-        </div>
-        {% with percent=monthly_total|floatformat:0 %}
-        <div class="progress-bar-wrap">
-            <div class="progress-bar" style="width: {% if monthly_total >= threshold %}100{% else %}{{ monthly_total|floatformat:0|add:'0' }}{% endif %}%">
-            </div>
-        </div>
-        {% endwith %}
-        <div class="progress-footer">
-            <span>هدف: ۱,۰۰۰,۰۰۰ تومان برای دریافت تخفیف ۱۰٪</span>
-            {% if monthly_total >= threshold %}
-            <span class="badge-success">هدف حاصل شد! ✅</span>
-            {% endif %}
-        </div>
+    <div class="progress-bar-wrap">
+        <div class="progress-bar" data-percent="{{ progress_percent }}"></div>
     </div>
-
-    <!-- Main Action Buttons -->
-    <div class="action-grid">
-        <!-- Prescription -->
-        <div class="action-card" onclick="openPrescriptionModal()">
-            <div class="action-icon" style="background: linear-gradient(135deg, #1a7a4a, #2dbe78)">
-                <i class="fas fa-file-prescription"></i>
-            </div>
-            <h3>ثبت نسخه</h3>
-            <p>کد رهگیری نسخه خود را ثبت کنید</p>
-            <span class="action-arrow"><i class="fas fa-arrow-left"></i></span>
-        </div>
-
-        <!-- Consultation -->
-        <a href="{% url 'user_chat' %}" class="action-card">
-            <div class="action-icon" style="background: linear-gradient(135deg, #0d6ea8, #1a9be8)">
-                <i class="fas fa-hand-holding-medical"></i>
-            </div>
-            <h3>مشاوره با داروساز</h3>
-            <p>سوالات دارویی خود را بپرسید</p>
-            <span class="action-arrow"><i class="fas fa-arrow-left"></i></span>
-        </a>
-
-        <!-- Blog -->
-        <a href="{% url 'blog' %}" class="action-card">
-            <div class="action-icon" style="background: linear-gradient(135deg, #7c4dce, #b47fde)">
-                <i class="fas fa-book-medical"></i>
-            </div>
-            <h3>بلاگ و آموزش</h3>
-            <p>مقالات آموزشی پزشکی</p>
-            <span class="action-arrow coming-soon-tag">به زودی</span>
-        </a>
-
-        <!-- My Prescriptions -->
-        <a href="{% url 'my_prescriptions' %}" class="action-card">
-            <div class="action-icon" style="background: linear-gradient(135deg, #c0552a, #e8824a)">
-                <i class="fas fa-list-alt"></i>
-            </div>
-            <h3>نسخه‌های من</h3>
-            <p>تاریخچه و وضعیت نسخه‌ها</p>
-            <span class="action-arrow"><i class="fas fa-arrow-left"></i></span>
-        </a>
+    <div class="progress-footer">
+        <span>هدف: ۱,۰۰۰,۰۰۰ تومان برای دریافت تخفیف ۱۰٪</span>
+        {% if monthly_total >= threshold %}<span class="badge-success">هدف حاصل شد! ✅</span>{% endif %}
     </div>
+</div>
 
-    <!-- Recent Notifications -->
-    {% if notifications %}
-    <div class="recent-notifs">
-        <h3><i class="fas fa-bell"></i> اعلان‌های اخیر</h3>
+{% if notifications %}
+<div class="recent-notifs">
+    <h3><i class="fas fa-bell"></i> اعلان‌های اخیر</h3>
+    <div class="notif-list">
         {% for notif in notifications %}
         <div class="notif-row {% if not notif.is_read %}unread{% endif %}">
             <div class="notif-icon-wrap">
-                {% if notif.notification_type == 'prescription' %}
-                <i class="fas fa-file-medical" style="color: #1a7a4a"></i>
-                {% elif notif.notification_type == 'discount' %}
-                <i class="fas fa-tag" style="color: #e8a000"></i>
-                {% else %}
-                <i class="fas fa-bell" style="color: #0d6ea8"></i>
-                {% endif %}
+                {% if notif.notification_type == 'prescription' %}<i class="fas fa-file-medical"></i>
+                {% elif notif.notification_type == 'discount' %}<i class="fas fa-tag"></i>
+                {% elif notif.notification_type == 'broadcast' %}<i class="fas fa-bullhorn"></i>
+                {% else %}<i class="fas fa-bell"></i>{% endif %}
             </div>
             <div class="notif-body">
                 <strong>{{ notif.title }}</strong>
@@ -114,29 +91,35 @@
         </div>
         {% endfor %}
     </div>
-    {% endif %}
+    <div class="section-title" style="margin-top:.8rem"><span></span><a href="{% url 'notifications_page' %}">مشاهده‌ی همه</a></div>
+</div>
+{% endif %}
+
+<div class="address-card">
+    <i class="fas fa-location-dot"></i>
+    <div><strong>{{ PHARMACY_NAME }}</strong><span>{{ PHARMACY_ADDRESS }}</span></div>
 </div>
 
-<!-- Prescription Modal -->
+<!-- ═════ مودال ثبت نسخه ═════ -->
 <div class="modal-overlay" id="prescriptionModal" style="display:none">
-    <div class="modal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rxTitle">
         <div class="modal-header">
-            <h3><i class="fas fa-file-prescription"></i> ثبت نسخه</h3>
-            <button onclick="closePrescriptionModal()" class="modal-close">&times;</button>
+            <h3 id="rxTitle"><i class="fas fa-file-prescription"></i> ثبت نسخه</h3>
+            <button type="button" onclick="closePrescriptionModal()" class="modal-close" aria-label="بستن">&times;</button>
         </div>
         <div class="modal-body">
-            <p class="modal-hint">لطفاً اطلاعات نسخه پزشکی خود را وارد کنید</p>
+            <p class="modal-hint">لطفاً اطلاعات نسخه‌ی پزشکی خود را وارد کنید.</p>
             <div class="form-group">
-                <label><i class="fas fa-barcode"></i> کد رهگیری نسخه</label>
-                <input type="text" id="trackingCode" class="form-input" placeholder="مثال: 1234567890" dir="ltr">
+                <label for="trackingCode"><i class="fas fa-barcode"></i> کد رهگیری نسخه</label>
+                <input type="text" id="trackingCode" class="form-input" placeholder="مثال: 1234567890" dir="ltr" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label><i class="fas fa-id-card"></i> کد ملی</label>
+                <label for="nationalId"><i class="fas fa-id-card"></i> کد ملی</label>
                 <input type="text" id="nationalId" class="form-input" placeholder="۱۰ رقم" maxlength="10" dir="ltr" inputmode="numeric">
             </div>
             <div class="form-group">
-                <label><i class="fas fa-shield-alt"></i> نوع بیمه</label>
-                <select id="insuranceType" class="form-input" style="height:44px;cursor:pointer;padding:.5rem .8rem">
+                <label for="insuranceType"><i class="fas fa-shield-halved"></i> نوع بیمه</label>
+                <select id="insuranceType" class="form-input">
                     <optgroup label="─── بیمه‌های پایه (همگانی) ───">
                         <option value="tamin">بیمه تأمین اجتماعی</option>
                         <option value="salamat">بیمه سلامت ایرانیان</option>
@@ -172,13 +155,14 @@
             <div id="prescriptionMsg"></div>
         </div>
         <div class="modal-footer">
-            <button onclick="submitPrescription()" class="btn btn-primary">
+            <button type="button" onclick="submitPrescription()" class="btn btn-primary" id="rxSubmit">
                 <i class="fas fa-paper-plane"></i> ثبت نسخه
             </button>
-            <button onclick="closePrescriptionModal()" class="btn btn-secondary">انصراف</button>
+            <button type="button" onclick="closePrescriptionModal()" class="btn btn-secondary">انصراف</button>
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
@@ -197,43 +181,42 @@ function submitPrescription() {
     const tracking = document.getElementById('trackingCode').value.trim();
     const national = document.getElementById('nationalId').value.trim();
     const msgDiv = document.getElementById('prescriptionMsg');
+    const btn = document.getElementById('rxSubmit');
     if (!tracking || !national) {
         msgDiv.innerHTML = '<div class="alert alert-danger">لطفاً تمام فیلدها را پر کنید.</div>';
         return;
     }
-    const insurance = document.getElementById('insuranceType').value;
     const formData = new FormData();
     formData.append('tracking_code', tracking);
     formData.append('national_id', national);
-    formData.append('insurance_type', insurance);
-    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    formData.append('insurance_type', document.getElementById('insuranceType').value);
+    formData.append('csrfmiddlewaretoken', csrfToken());
 
+    btn.disabled = true;
     fetch('{% url "submit_prescription" %}', {
-        method: 'POST',
-        headers: {'X-CSRFToken': '{{ csrf_token }}'},
-        body: formData,
+        method: 'POST', credentials: 'same-origin',
+        headers: {'X-CSRFToken': csrfToken()}, body: formData,
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            msgDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ${data.message}</div>`;
-            setTimeout(() => { closePrescriptionModal(); loadNotifications(); }, 2000);
+            msgDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-circle-check"></i> ' + esc(data.message) + '</div>';
+            setTimeout(() => { closePrescriptionModal(); loadNotifications(); }, 1800);
         } else {
-            msgDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${data.error}</div>`;
+            msgDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-circle-xmark"></i> ' + esc(data.error) + '</div>';
         }
-    });
+    })
+    .catch(() => {
+        msgDiv.innerHTML = '<div class="alert alert-danger">ارتباط با سرور برقرار نشد. اینترنت خود را بررسی کنید.</div>';
+    })
+    .finally(() => { btn.disabled = false; });
 }
 
-// Progress bar calculation
 document.addEventListener('DOMContentLoaded', () => {
     const bar = document.querySelector('.progress-bar');
-    if (bar) {
-        const monthly = {{ monthly_total }};
-        const threshold = {{ threshold }};
-        const pct = Math.min((monthly / threshold) * 100, 100);
-        bar.style.width = pct + '%';
-    }
+    if (bar) requestAnimationFrame(() => { bar.style.width = (bar.dataset.percent || 0) + '%'; });
+    // میان‌بر «ثبت نسخه» (منوی کناری / Shortcut اپ)
+    if (new URLSearchParams(location.search).get('action') === 'prescription') openPrescriptionModal();
 });
 </script>
-{% endblock %}
 {% endblock %}

@@ -54,6 +54,18 @@ class MarkReadView(View):
             return JsonResponse({'success': False})
 
 
+class NotificationsPageView(View):
+    """صفحه‌ی کامل اعلان‌ها (مقصد کلیک روی نوتیفیکیشن‌های Push)."""
+
+    @method_decorator(login_required)
+    def get(self, request):
+        items = Notification.objects.filter(user=request.user).order_by('-created_at')[:60]
+        unread = Notification.objects.filter(user=request.user, is_read=False).count()
+        return render(request, 'notifications/list.html', {
+            'items': items, 'unread_count': unread,
+        })
+
+
 # ─────────────────────────────────────────────
 #  پیام همگانی (ادمین)
 # ─────────────────────────────────────────────
@@ -112,7 +124,9 @@ class AdminBroadcastView(View):
                 notification_type='broadcast'
             ) for u in users
         ]
-        Notification.objects.bulk_create(notifications)
+        created_notifications = Notification.objects.bulk_create(notifications)
+        from apps.pwa.push import push_after_commit
+        push_after_commit(created_notifications)   # ارسال Push به دستگاه‌های نصب‌شده
 
         # If there's a discount, create/activate a global campaign automatically
         if discount_percentage:

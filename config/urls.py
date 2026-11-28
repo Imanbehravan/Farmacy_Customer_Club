@@ -12,6 +12,7 @@ urlpatterns = [
     path('django-admin/', admin.site.urls),
     
     # همه اپ‌ها با path خالی (همونطور که قبلاً بودن)
+    path('', include('apps.pwa.urls')),
     path('', include('apps.accounts.urls')),
     path('', include('apps.prescriptions.urls')),
     path('', include('apps.notifications.urls')),

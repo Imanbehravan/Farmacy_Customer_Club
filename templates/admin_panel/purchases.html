@@ -56,7 +56,7 @@
         <span id="progressPct"></span>
       </div>
       <div style="height:8px;background:#e8f0ec;border-radius:4px;overflow:hidden">
-        <div id="progressBar" style="height:100%;background:linear-gradient(90deg,#1a7a4a,#2dbe78);border-radius:4px;transition:width .6s ease;width:0%"></div>
+        <div id="progressBar" style="height:100%;background:linear-gradient(90deg,#4e7034,#7da150);border-radius:4px;transition:width .6s ease;width:0%"></div>
       </div>
     </div>
   </div>
@@ -222,42 +222,42 @@
 
 {% block extra_css %}
 <style>
-.step-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1a7a4a;color:#fff;font-size:.75rem;font-weight:700;margin-left:.5rem;flex-shrink:0}
+.step-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#4e7034;color:#fff;font-size:.75rem;font-weight:700;margin-left:.5rem;flex-shrink:0}
 /* User info strip */
-.user-info-strip{display:flex;align-items:center;gap:1rem;background:#f0fff7;border:1.5px solid #a7f3d0;border-radius:10px;padding:1rem;flex-wrap:wrap}
-.user-info-avatar{font-size:2.2rem;color:#1a7a4a;flex-shrink:0}
+.user-info-strip{display:flex;align-items:center;gap:1rem;background:#f5f8ee;border:1.5px solid #d4e3b8;border-radius:10px;padding:1rem;flex-wrap:wrap}
+.user-info-avatar{font-size:2.2rem;color:#4e7034;flex-shrink:0}
 .user-info-details strong{display:block;font-size:.95rem}
 .user-info-details span{font-size:.8rem;color:#64748b}
 .user-info-stats{display:flex;gap:1.2rem;margin-right:auto}
 .ui-stat{text-align:center}
 .ui-stat-label{display:block;font-size:.7rem;color:#64748b}
-.ui-stat-value{font-size:.95rem;font-weight:700;color:#1a7a4a}
+.ui-stat-value{font-size:.95rem;font-weight:700;color:#4e7034}
 .loyalty-badge{background:#fffbeb;border:1.5px solid #fde68a;color:#92400e;border-radius:20px;padding:.3rem .9rem;font-size:.78rem;font-weight:600;display:flex;align-items:center;gap:.4rem}
 /* Purchase fields */
 .purchase-fields-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem}
 /* Type toggle */
 .type-toggle{display:flex;gap:.5rem}
 .toggle-opt{flex:1;display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem;border:1.5px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .2s}
-.toggle-opt:has(input:checked){border-color:#1a7a4a;background:#f0fff7;color:#1a7a4a}
+.toggle-opt:has(input:checked){border-color:#4e7034;background:#f5f8ee;color:#4e7034}
 .toggle-opt input{display:none}
 /* Discount options */
 .discount-option{border:1.5px solid #e2e8f0;border-radius:10px;padding:1rem;cursor:pointer;transition:all .2s;margin-bottom:.7rem;display:flex;align-items:center;gap:.9rem}
-.discount-option:hover{border-color:#1a7a4a;background:#f8fffe}
-.discount-option.selected{border-color:#1a7a4a;background:#f0fff7}
+.discount-option:hover{border-color:#4e7034;background:#f7f9f1}
+.discount-option.selected{border-color:#4e7034;background:#f5f8ee}
 .discount-option.no-disc{border-style:dashed}
 .disc-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
 .disc-loyalty-icon{background:#fffbeb;color:#f59e0b}
-.disc-campaign-icon{background:#eff6ff;color:#3b82f6}
+.disc-campaign-icon{background:#f5f8ee;color:#628740}
 .disc-none-icon{background:#f1f5f9;color:#94a3b8}
 .disc-info h4{font-size:.88rem;font-weight:700;margin-bottom:.2rem}
 .disc-info p{font-size:.75rem;color:#64748b;margin:0}
-.disc-pct-badge{margin-right:auto;font-size:1.3rem;font-weight:800;color:#1a7a4a}
+.disc-pct-badge{margin-right:auto;font-size:1.3rem;font-weight:800;color:#4e7034}
 /* Summary box */
 .summary-box{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:1.2rem}
 .summary-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f0f4f8;font-size:.88rem}
 .summary-row:last-child{border-bottom:none;padding-top:.8rem;margin-top:.3rem}
-.summary-row.total{font-size:1.05rem;font-weight:800;color:#1a7a4a}
-.saving-chip{background:#ecfdf5;color:#065f46;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:20px}
+.summary-row.total{font-size:1.05rem;font-weight:800;color:#4e7034}
+.saving-chip{background:#e9f0da;color:#2b3f1c;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:20px}
 @media(max-width:900px){.purchase-fields-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.purchase-fields-grid{grid-template-columns:1fr}.user-info-stats{flex-direction:column;gap:.4rem}}
 </style>
@@ -296,7 +296,7 @@ function searchUser() {
         return;
       }
       status.textContent = '✅ کاربر یافت شد';
-      status.style.color = '#10b981';
+      status.style.color = '#628740';
       currentUser = data;
       renderUserInfo(data);
       renderDiscountOptions(data);

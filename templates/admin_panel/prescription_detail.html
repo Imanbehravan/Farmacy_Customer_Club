@@ -62,7 +62,7 @@
         {% csrf_token %}
         <input type="hidden" name="action" value="set_contract">
         <input type="hidden" name="contract_value" value="contracted">
-        <div class="contract-icon" style="background:#ecfdf5;color:#10b981">
+        <div class="contract-icon" style="background:#e9f0da;color:#628740">
           <i class="fas fa-check-circle"></i>
         </div>
         <div class="contract-body">
@@ -340,8 +340,8 @@
 {% if prescription.status == 'ready' or prescription.status == 'partial' %}
 
     {% if prescription.status == 'ready' %}
-        <i class="fas fa-check-circle" style="font-size:3rem;color:#10b981;display:block;margin-bottom:.8rem"></i>
-        <strong style="font-size:1.1rem;color:#065f46">نسخه آماده تحویل اعلام شده است</strong>
+        <i class="fas fa-check-circle" style="font-size:3rem;color:#628740;display:block;margin-bottom:.8rem"></i>
+        <strong style="font-size:1.1rem;color:#2b3f1c">نسخه آماده تحویل اعلام شده است</strong>
     {% else %}
         <i class="fas fa-exclamation-triangle" style="font-size:3rem;color:#f59e0b;display:block;margin-bottom:.8rem"></i>
         <strong style="font-size:1.1rem;color:#92400e">موجودی ناقص — کاربر مطلع شده است</strong>
@@ -376,8 +376,8 @@
     </form>
 
 {% elif prescription.status == 'delivered' %}
-    <i class="fas fa-check-double" style="font-size:3rem;color:#3b82f6;display:block;margin-bottom:.8rem"></i>
-    <strong style="font-size:1.1rem;color:#1e40af">داروها با موفقیت تحویل داده شده‌اند</strong>
+    <i class="fas fa-check-double" style="font-size:3rem;color:#628740;display:block;margin-bottom:.8rem"></i>
+    <strong style="font-size:1.1rem;color:#3c5728">داروها با موفقیت تحویل داده شده‌اند</strong>
     {% if prescription.admin_notes %}
         <div class="notes-box" style="margin-top:1rem;text-align:right">{{ prescription.admin_notes }}</div>
     {% endif %}
@@ -400,14 +400,14 @@
 .step-badge {
   display:inline-flex;align-items:center;justify-content:center;
   width:24px;height:24px;border-radius:50%;
-  background:#1a7a4a;color:#fff;font-size:.75rem;font-weight:700;
+  background:#4e7034;color:#fff;font-size:.75rem;font-weight:700;
   margin-left:.5rem;flex-shrink:0;
 }
 /* Availability toggle button */
 /* Contract section */
 .contract-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .contract-option{border:1.5px solid #e2e8f0;border-radius:10px;padding:1rem 1.2rem;display:flex;align-items:center;gap:.9rem;background:#fff}
-.contract-selected.contracted{border-color:#a7f3d0;background:#f0fff7}
+.contract-selected.contracted{border-color:#d4e3b8;background:#f5f8ee}
 .contract-selected.no-contracted{border-color:#fecaca;background:#fef2f2}
 .contract-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
 .contract-body{flex:1}
@@ -420,7 +420,7 @@
   font-size:.75rem;font-weight:700;font-family:'Vazirmatn',sans-serif;
   transition:all .2s;
 }
-.avail-yes { background:#ecfdf5;color:#065f46;border:1.5px solid #a7f3d0; }
+.avail-yes { background:#e9f0da;color:#2b3f1c;border:1.5px solid #d4e3b8; }
 .avail-yes:hover { background:#d1fae5; }
 .avail-no  { background:#fef2f2;color:#991b1b;border:1.5px solid #fecaca; }
 .avail-no:hover  { background:#fee2e2; }
@@ -434,7 +434,7 @@
   padding:.3rem .8rem;border-radius:20px;font-size:.78rem;font-weight:600;
 }
 .chip-total   { background:#f1f5f9;color:#475569; }
-.chip-avail   { background:#ecfdf5;color:#065f46; }
+.chip-avail   { background:#e9f0da;color:#2b3f1c; }
 .chip-unavail { background:#fef2f2;color:#991b1b; }
 /* Finalize section */
 .finalize-grid {
@@ -442,7 +442,7 @@
   align-items:start;padding:1.2rem;gap:0;
 }
 .finalize-option { padding:1.2rem;border-radius:10px;border:1.5px solid #e2e8f0; }
-.option-ready  { border-color:#a7f3d0;background:#f0fdf4; }
+.option-ready  { border-color:#d4e3b8;background:#f5f8ee; }
 .option-partial{ border-color:#fde68a;background:#fffbeb; }
 .finalize-divider {
   display:flex;align-items:center;justify-content:center;
@@ -451,7 +451,7 @@
 .finalize-icon {
   font-size:2rem;margin-bottom:.6rem;
 }
-.option-ready  .finalize-icon { color:#10b981; }
+.option-ready  .finalize-icon { color:#628740; }
 .finalize-icon.partial-icon   { color:#f59e0b; }
 .finalize-option h4 { font-size:.92rem;margin-bottom:.4rem; }
 .finalize-option p  { font-size:.78rem;color:#64748b;margin-bottom:.9rem;line-height:1.5; }

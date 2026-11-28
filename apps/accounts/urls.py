@@ -10,5 +10,6 @@ urlpatterns = [
     path('verify/resend/', views.ResendOTPView.as_view(), name='resend_otp'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
     path('panel/reports/', include('apps.reports.urls')),
 ]

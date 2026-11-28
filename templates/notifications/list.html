@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}اعلان‌ها | باشگاه مشتریان{% endblock %}
+{% block page_title %}اعلان‌ها{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="page-header">
+        <a href="{% url 'dashboard' %}" class="back-btn tb-back" aria-label="بازگشت"><i class="fas fa-arrow-right"></i></a>
+        <h2><i class="fas fa-bell"></i> اعلان‌ها</h2>
+        <span class="tb-spacer"></span>
+        {% if unread_count %}
+        <button type="button" class="btn btn-secondary btn-sm" onclick="markAllRead().then(() => location.reload())">همه را خواندم</button>
+        {% endif %}
+    </div>
+
+    <div class="card" data-push-prompt hidden style="margin-bottom:1rem">
+        <h3><i class="fas fa-bell-concierge"></i> دریافت اعلان روی دستگاه</h3>
+        <p>با فعال‌سازی، پیام‌های مهم را بدون باز کردن سایت دریافت می‌کنید.</p>
+        <button type="button" class="btn btn-primary" data-push-enable>فعال‌سازی اعلان‌ها</button>
+    </div>
+
+    {% if items %}
+    <div class="notif-list">
+        {% for n in items %}
+        <div class="notif-card {% if not n.is_read %}unread{% endif %}" data-id="{{ n.id }}" {% if not n.is_read %}onclick="markRead({{ n.id }}); this.classList.remove('unread'); this.querySelector('.notif-dot')?.remove()"{% endif %}>
+            <div class="notif-icon-wrap">
+                {% if n.notification_type == 'prescription' %}<i class="fas fa-file-medical"></i>
+                {% elif n.notification_type == 'discount' %}<i class="fas fa-tag"></i>
+                {% elif n.notification_type == 'broadcast' %}<i class="fas fa-bullhorn"></i>
+                {% else %}<i class="fas fa-bell"></i>{% endif %}
+            </div>
+            <div class="notif-body">
+                <strong>{{ n.title }}</strong>
+                <p>{{ n.message }}</p>
+                <small>{{ n.created_at|jalali:"%Y/%m/%d %H:%M" }}</small>
+            </div>
+            {% if not n.is_read %}<span class="notif-dot"></span>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-bell-slash"></i>
+        <h3>اعلانی وجود ندارد</h3>
+        <p>وقتی پیام یا تغییری در نسخه‌هایتان باشد اینجا می‌بینید.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

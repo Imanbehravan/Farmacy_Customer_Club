@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% block title %}مشاوره با داروساز | باشگاه مشتریان{% endblock %}
+{% block page_title %}مشاوره با داروساز{% endblock %}
 {% block content %}
 <div class="chat-wrapper">
     <div class="chat-header">
-        <a href="{% url 'dashboard' %}" class="back-btn">
+        <a href="{% url 'dashboard' %}" class="back-btn tb-back" aria-label="بازگشت">
             <i class="fas fa-arrow-right"></i>
         </a>
         <div class="chat-agent-info">
             <div class="agent-avatar">
-                <i class="fas fa-user-md"></i>
+                <i class="fas fa-user-doctor"></i>
                 <span class="online-dot"></span>
             </div>
             <div>
@@ -20,13 +21,13 @@
 
     <div class="chat-messages" id="chatMessages">
         <div class="chat-welcome">
-            <i class="fas fa-pills"></i>
+            <i class="fas fa-capsules"></i>
             <p>سلام! داروساز ما آماده پاسخگویی به سوالات دارویی شماست.</p>
         </div>
         {% for msg in chat_messages %}
         <div class="message-row {% if msg.is_from_admin %}msg-admin{% else %}msg-user{% endif %}">
             {% if msg.is_from_admin %}
-            <div class="msg-avatar"><i class="fas fa-user-md"></i></div>
+            <div class="msg-avatar"><i class="fas fa-user-doctor"></i></div>
             {% endif %}
             <div class="message-bubble">
                 <div class="msg-text">{{ msg.message }}</div>
@@ -97,10 +98,10 @@ function appendMessage(data) {
     const row = document.createElement('div');
     row.className = `message-row ${isAdmin ? 'msg-admin' : 'msg-user'}`;
     row.innerHTML = `
-        ${isAdmin ? '<div class="msg-avatar"><i class="fas fa-user-md"></i></div>' : ''}
+        ${isAdmin ? '<div class="msg-avatar"><i class="fas fa-user-doctor"></i></div>' : ''}
         <div class="message-bubble">
-            <div class="msg-text">${data.message}</div>
-            <div class="msg-time">${data.time}</div>
+            <div class="msg-text">${esc(data.message)}</div>
+            <div class="msg-time">${esc(data.time)}</div>
         </div>
         ${!isAdmin ? '<div class="msg-avatar user-av"><i class="fas fa-user"></i></div>' : ''}
     `;
