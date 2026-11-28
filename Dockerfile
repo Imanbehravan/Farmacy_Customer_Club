@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
-
+COPY sitecustomize.py /usr/local/lib/python3.11/site-packages/sitecustomize.py
 COPY . .
 
 RUN mkdir -p /app/staticfiles /app/media
